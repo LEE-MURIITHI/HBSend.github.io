@@ -1,0 +1,817 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>HBSend • Money Follows Your Rules</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css" />
+
+  <style>
+    :root {
+      --bg: #000000;
+      --text: #f8f9fa;
+      --text-dim: #a0a0a5;
+      --cyan: #00eaff;
+      --cyan-dark: #00aaff;
+      --green: #39ff14;
+      --pink: #ff3366;
+      --gold: #ffd700;
+      --glow: 0 0 24px rgba(0, 234, 255, 0.5);
+      --glow-soft: 0 0 12px rgba(0, 234, 255, 0.25);
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      line-height: 1.5;
+      overflow-x: hidden;
+    }
+
+    header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 1000;
+    }
+
+    .top-bar {
+      padding: 1.2rem 5%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.8);
+      backdrop-filter: blur(16px);
+    }
+
+    .logo-container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .logo-text {
+      font-size: 3.2rem;
+      font-weight: 900;
+      letter-spacing: -2px;
+      background: linear-gradient(90deg, var(--cyan), var(--cyan-dark), var(--cyan));
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: var(--glow);
+      animation: logoPulse 4s infinite alternate;
+    }
+
+    @keyframes logoPulse {
+      0%   { text-shadow: 0 0 20px rgba(0,234,255,0.5); }
+      100% { text-shadow: 0 0 40px rgba(0,234,255,0.9); }
+    }
+
+    nav {
+      height: 74px;
+      background: rgba(0,0,0,0.9);
+      backdrop-filter: blur(16px);
+      display: flex;
+      align-items: center;
+      overflow-x: auto;
+      padding: 0 5%;
+      gap: 2.2rem;
+    }
+
+    nav::-webkit-scrollbar { display: none; }
+
+    .nav-item {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      color: var(--text-dim);
+      text-decoration: none;
+      transition: all 0.3s;
+      padding: 0.7rem 1.3rem;
+      border-radius: 16px;
+      white-space: nowrap;
+    }
+
+    .nav-item:hover,
+    .nav-item.active {
+      color: white;
+      background: rgba(0,234,255,0.12);
+      box-shadow: var(--glow-soft);
+    }
+
+    .nav-icon {
+      font-size: 2.4rem;
+      transition: all 0.3s;
+    }
+
+    .nav-item:hover .nav-icon {
+      transform: scale(1.12);
+      text-shadow: var(--glow);
+    }
+
+    .nav-label {
+      font-size: 1rem;
+      font-weight: 500;
+    }
+
+    main {
+      padding-top: 150px;
+    }
+
+    .section {
+      padding: 5rem 6% 8rem;
+      min-height: 80vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .teaser-title {
+      font-size: clamp(2.8rem, 6vw, 4.5rem);
+      font-weight: 800;
+      margin-bottom: 1.5rem;
+      background: linear-gradient(90deg, var(--cyan), white);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+    }
+
+    .slideshow {
+      font-size: clamp(1.6rem, 4.5vw, 3.2rem);
+      font-weight: 600;
+      min-height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      max-width: 960px;
+      margin: 2rem auto 4rem;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .slideshow span {
+      opacity: 0;
+      transform: translateY(30px);
+      transition: all 1.1s ease-out;
+      position: absolute;
+      text-shadow: 0 0 30px rgba(0,234,255,0.4);
+      text-align: center;
+    }
+
+    .slideshow span.active {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .big-logo {
+      font-size: clamp(7rem, 15vw, 14rem);
+      font-weight: 900;
+      letter-spacing: -0.1em;
+      line-height: 0.85;
+      background: linear-gradient(135deg, white 15%, var(--cyan) 55%, white 85%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      text-shadow: var(--glow);
+      margin-bottom: 1rem;
+    }
+
+    .slogan {
+      font-size: clamp(2.2rem, 5vw, 3.2rem);
+      font-weight: 600;
+      color: var(--text);
+      margin: 0 auto 2.5rem;
+      max-width: 900px;
+      min-height: 100px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
+    }
+
+    .slogan span {
+      opacity: 0;
+      transform: translateY(15px);
+      transition: opacity 1.2s ease, transform 1.2s ease;
+      text-shadow: 0 0 25px var(--cyan);
+    }
+
+    .slogan span.visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .buttons {
+      display: flex;
+      gap: 1.5rem;
+      flex-wrap: wrap;
+      justify-content: center;
+      margin-top: 1.5rem;
+    }
+
+    .glow-btn {
+      padding: 1.2rem 3rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      border-radius: 999px;
+      cursor: pointer;
+      transition: all 0.4s;
+      border: none;
+      background: linear-gradient(45deg, var(--cyan), var(--cyan-dark));
+      color: black;
+      box-shadow: var(--glow);
+      animation: pulseGlow 2.5s infinite alternate;
+    }
+
+    @keyframes pulseGlow {
+      0%   { box-shadow: 0 0 20px rgba(0,234,255,0.4); transform: scale(1); }
+      100% { box-shadow: 0 0 50px rgba(0,234,255,0.8); transform: scale(1.04); }
+    }
+
+    .glow-btn:hover {
+      transform: translateY(-4px) scale(1.06);
+      box-shadow: 0 0 80px rgba(0,234,255,0.9);
+      animation: none;
+    }
+
+    .btn-outline {
+      padding: 1.2rem 3rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      border-radius: 999px;
+      background: transparent;
+      border: 2px solid var(--cyan);
+      color: var(--cyan);
+    }
+
+    .btn-outline:hover {
+      background: rgba(0,234,255,0.08);
+      box-shadow: var(--glow-soft);
+    }
+
+    .locked-message {
+      font-size: 1.5rem;
+      color: var(--pink);
+      margin: 2rem 0;
+      font-weight: 600;
+    }
+
+    .cta-btn {
+      padding: 1.2rem 3rem;
+      font-size: 1.3rem;
+      font-weight: 600;
+      border-radius: 999px;
+      background: linear-gradient(45deg, var(--cyan), var(--cyan-dark));
+      color: black;
+      box-shadow: var(--glow);
+      cursor: pointer;
+    }
+
+    .cta-btn:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 0 70px rgba(0,234,255,0.7);
+    }
+
+    footer {
+      padding: 5rem 6% 3rem;
+      text-align: center;
+      color: var(--text-dim);
+      border-top: 1px solid rgba(0,234,255,0.1);
+    }
+
+    .support i {
+      font-size: 3.8rem;
+      color: var(--cyan);
+      margin-bottom: 1.2rem;
+      display: block;
+    }
+
+    .email {
+      color: var(--text);
+      text-decoration: none;
+      font-size: 1.3rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.8rem;
+    }
+
+    .email i {
+      font-size: 1.8rem;
+      color: var(--cyan);
+    }
+
+    .email:hover {
+      color: var(--cyan);
+      text-shadow: 0 0 16px var(--cyan);
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.94);
+      backdrop-filter: blur(28px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: flex-start;
+      padding: 2rem 1rem;
+      overflow-y: auto;
+    }
+
+    .modal-inner {
+      background: linear-gradient(145deg, #000000, #0a0a0f);
+      border: 1px solid rgba(0, 234, 255, 0.18);
+      border-radius: 28px;
+      padding: 2.8rem 2.2rem;
+      width: 100%;
+      max-width: 420px;
+      max-height: 90vh;
+      overflow-y: auto;
+      box-shadow: 0 0 60px rgba(0, 234, 255, 0.25);
+      position: relative;
+    }
+
+    .close-btn {
+      position: sticky;
+      top: 1rem;
+      right: 0;
+      font-size: 2.4rem;
+      color: #444;
+      cursor: pointer;
+      z-index: 10;
+      background: rgba(0,0,0,0.6);
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-left: auto;
+    }
+
+    .close-btn:hover {
+      color: var(--cyan);
+      transform: rotate(90deg);
+    }
+
+    .auth-title {
+      font-size: 2rem;
+      text-align: center;
+      margin-bottom: 2rem;
+      color: var(--cyan);
+      text-shadow: var(--glow);
+    }
+
+    .social-login {
+      width: 100%;
+      padding: 1.1rem;
+      margin: 0.8rem 0;
+      border-radius: 999px;
+      font-size: 1.05rem;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.9rem;
+      transition: all 0.3s;
+      border: none;
+      color: white;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.5);
+    }
+
+    .social-login:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 0 30px rgba(255,255,255,0.15);
+    }
+
+    /* Brand colors */
+    .google   { background: #4285f4; }
+    .spotify  { background: #1db954; }
+    .reddit   { background: #ff4500; }
+    .discord  { background: #5865f2; }
+    .github   { background: #24292e; }
+    .gmail    { background: #DB4437; }
+    .email    { background: #4285f4; }
+
+    /* Chatbot styles */
+    .chat-container {
+      background: rgba(10,10,20,0.9);
+      border-radius: 16px;
+      padding: 1.5rem;
+      max-width: 600px;
+      width: 100%;
+      margin: 2rem auto;
+      border: 1px solid rgba(0,234,255,0.2);
+      box-shadow: var(--glow-soft);
+    }
+
+    .chat-messages {
+      min-height: 300px;
+      max-height: 500px;
+      overflow-y: auto;
+      margin-bottom: 1.5rem;
+      padding-right: 0.5rem;
+    }
+
+    .message {
+      margin: 1.2rem 0;
+      padding: 1.1rem 1.4rem;
+      border-radius: 18px;
+      max-width: 82%;
+      word-wrap: break-word;
+      font-size: 1.05rem;
+      line-height: 1.5;
+    }
+
+    .user-message {
+      background: linear-gradient(135deg, var(--cyan), var(--cyan-dark));
+      color: #000;
+      margin-left: auto;
+      border-bottom-right-radius: 4px;
+    }
+
+    .bot-message {
+      background: rgba(255,255,255,0.07);
+      color: var(--text);
+      margin-right: auto;
+      border-bottom-left-radius: 4px;
+      border: 1px solid rgba(0,234,255,0.15);
+    }
+
+    .typing {
+      color: var(--text-dim);
+      font-style: italic;
+      margin: 1rem 0;
+      padding: 0 1.4rem;
+    }
+
+    .chat-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.9rem;
+    }
+
+    .option-btn {
+      padding: 1.1rem 1.4rem;
+      background: rgba(0,234,255,0.1);
+      border: 1px solid rgba(0,234,255,0.3);
+      border-radius: 14px;
+      color: var(--cyan);
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.25s;
+      text-align: left;
+    }
+
+    .option-btn:hover {
+      background: rgba(0,234,255,0.25);
+      transform: translateX(8px);
+      box-shadow: 0 0 20px rgba(0,234,255,0.3);
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="top-bar">
+    <div class="logo-container">
+      <div class="logo-text">HBSend</div>
+    </div>
+  </div>
+
+  <nav>
+    <a href="#home" class="nav-item active" data-tab="home">
+      <i class="fas fa-home nav-icon"></i>
+      <span class="nav-label">Home</span>
+    </a>
+    <a href="#send" class="nav-item" data-tab="send">
+      <i class="fas fa-paper-plane nav-icon"></i>
+      <span class="nav-label">Send Money</span>
+    </a>
+    <a href="#wallet" class="nav-item" data-tab="wallet">
+      <i class="fas fa-wallet nav-icon"></i>
+      <span class="nav-label">Wallet</span>
+    </a>
+    <a href="#rates" class="nav-item" data-tab="rates">
+      <i class="fas fa-exchange-alt nav-icon"></i>
+      <span class="nav-label">Rates</span>
+    </a>
+    <a href="#about" class="nav-item" data-tab="about">
+      <i class="fas fa-info-circle nav-icon"></i>
+      <span class="nav-label">About</span>
+    </a>
+    <a href="#support" class="nav-item" data-tab="support">
+      <i class="fas fa-headset nav-icon"></i>
+      <span class="nav-label">Support</span>
+    </a>
+  </nav>
+</header>
+
+<main>
+
+  <!-- Home -->
+  <section id="home" class="section">
+    <h1 class="big-logo">HBS</h1>
+
+    <div class="slogan" id="slogan">
+      <span class="slogan-text">Money Follows Your Rules</span>
+    </div>
+
+    <div class="buttons">
+      <button class="glow-btn" onclick="document.getElementById('authModal').style.display='flex'">Join Now</button>
+      <button class="btn-outline">See How It Works</button>
+    </div>
+
+    <p style="margin-top:3rem; font-size:1.2rem; max-width:700px; color:#777;">
+      Instant • Secure • Global • 100+ currencies • Only 5% when you send
+    </p>
+
+    <div id="user-location" class="location-info">
+      Detecting your location...
+    </div>
+
+    <div class="time-display" id="liveTime">
+      Current time in Nairobi: ...
+    </div>
+  </section>
+
+  <!-- Send Money -->
+  <section id="send" class="section" style="display:none;">
+    <h2 class="teaser-title">Send Money Globally</h2>
+    <div class="slideshow" id="send-slideshow"></div>
+    <div class="locked-message">
+      Login or sign up to send money instantly
+    </div>
+    <button class="cta-btn" onclick="document.getElementById('authModal').style.display='flex'">
+      Start Sending Now
+    </button>
+  </section>
+
+  <!-- Wallet -->
+  <section id="wallet" class="section" style="display:none;">
+    <h2 class="teaser-title">Your Digital Wallet</h2>
+    <div class="slideshow" id="wallet-slideshow"></div>
+    <div class="locked-message">
+      Sign in to manage your wallet
+    </div>
+    <button class="cta-btn" onclick="document.getElementById('authModal').style.display='flex'">
+      Open Wallet
+    </button>
+  </section>
+
+  <!-- Rates -->
+  <section id="rates" class="section">
+    <h2 class="teaser-title">Live Exchange Rates</h2>
+    <div class="slideshow" id="rates-slideshow"></div>
+    <p style="margin: 3rem auto; font-size:1.1rem; color:#888; max-width:720px;">
+      Real mid-market rates • Updated live • No hidden markup
+    </p>
+  </section>
+
+  <!-- About -->
+  <section id="about" class="section" style="display:none;">
+    <h2 class="teaser-title">About HBSend</h2>
+    <div class="slideshow" id="about-slideshow"></div>
+    <button class="cta-btn" onclick="document.getElementById('authModal').style.display='flex'">
+      Join the Movement
+    </button>
+  </section>
+
+  <!-- Support – full chatbot -->
+  <section id="support" class="section" style="display:none;">
+    <h2 class="teaser-title">Support</h2>
+
+    <div class="chat-container">
+      <div class="chat-messages" id="chatMessages">
+        <div class="message bot-message">
+          Hi! I'm HBSend Assistant. How can I help you today?
+        </div>
+      </div>
+
+      <div class="chat-options" id="chatOptions">
+        <button class="option-btn" onclick="sendMessage('How do I send money to M-Pesa?')">
+          How do I send money to M-Pesa?
+        </button>
+        <button class="option-btn" onclick="sendMessage('What are the fees?')">
+          What are the fees?
+        </button>
+        <button class="option-btn" onclick="sendMessage('Is my money safe?')">
+          Is my money safe?
+        </button>
+        <button class="option-btn" onclick="sendMessage('How long does a transfer take?')">
+          How long does a transfer take?
+        </button>
+        <button class="option-btn" onclick="sendMessage('I have a problem with my account')">
+          I have a problem with my account
+        </button>
+        <button class="option-btn" onclick="sendMessage('How do I contact human support?')">
+          How do I contact human support?
+        </button>
+      </div>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="support">
+    <i class="fas fa-headset"></i>
+    <a href="mailto:leekingori54@gmail.com" class="email">
+      <i class="fas fa-envelope"></i>
+      leekingori54@gmail.com
+    </a>
+  </div>
+</footer>
+
+<!-- Auth Modal – with all requested logins -->
+<div id="authModal" class="modal">
+  <div class="modal-inner">
+    <span class="close-btn" onclick="document.getElementById('authModal').style.display='none'">×</span>
+
+    <div style="text-align:center; margin-bottom:2.5rem;">
+      <h3 style="font-size:2rem; color:var(--cyan); text-shadow:var(--glow);">Get Started with HBSend</h3>
+      <p style="color:var(--text-dim); margin-top:0.8rem;">Create your account in seconds</p>
+    </div>
+
+    <button class="glow-btn" onclick="document.getElementById('authModal').style.display='none';">
+      Create Account
+    </button>
+
+    <div class="or" style="margin:2rem 0; color:var(--text-dim);">or quick sign up with</div>
+
+    <button class="social-login google">
+      <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.51h5.84c-.25 1.31-.98 2.42-2.07 3.16v2.63h3.35c1.96-1.81 3.09-4.47 3.09-7.8z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.35-2.63c-.98.66-2.23 1.06-3.93 1.06-3.02 0-5.58-2.04-6.49-4.78H.96v2.67C2.75 20.99 6.97 23 12 23z" fill="#34A853"/>
+        <path d="M5.51 14.21c-.23-.66-.36-1.37-.36-2.21s.13-1.55.36-2.21V7.34H.96C.35 8.85 0 10.39 0 12s.35 3.15.96 4.66l4.55-2.45z" fill="#FBBC05"/>
+        <path d="M12 4.98c1.64 0 3.11.56 4.27 1.66l3.19-3.19C17.46 1.01 14.97 0 12 0 6.97 0 2.75 2.01.96 5.34l4.55 2.45C6.42 5.02 8.98 4.98 12 4.98z" fill="#EA4335"/>
+      </svg>
+      Google
+    </button>
+
+    <button class="social-login spotify">
+      <i class="fab fa-spotify" style="font-size:1.6rem;"></i>
+      Spotify
+    </button>
+
+    <button class="social-login reddit">
+      <i class="fab fa-reddit" style="font-size:1.6rem;"></i>
+      Reddit
+    </button>
+
+    <button class="social-login gmail">
+      <svg width="24" height="24" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+      </svg>
+      Gmail
+    </button>
+
+    <button class="social-login discord">
+      <i class="fab fa-discord" style="font-size:1.6rem;"></i>
+      Discord
+    </button>
+
+    <button class="social-login github">
+      <i class="fab fa-github" style="font-size:1.6rem;"></i>
+      GitHub
+    </button>
+
+    <button class="social-login email">
+      <i class="fas fa-envelope" style="font-size:1.5rem;"></i>
+      Continue with Email
+    </button>
+
+  </div>
+</div>
+
+<script>
+// Mouse glow effect
+document.addEventListener('mousemove', e => {
+  document.body.style.setProperty('--mouse-x', e.clientX + 'px');
+  document.body.style.setProperty('--mouse-y', e.clientY + 'px');
+});
+
+// Live time in Nairobi
+function updateTime() {
+  const now = new Date().toLocaleString('en-US', { timeZone: 'Africa/Nairobi' });
+  document.getElementById('liveTime').textContent = `Nairobi time: ${now}`;
+}
+setInterval(updateTime, 1000);
+updateTime();
+
+// Tab switching
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', e => {
+    e.preventDefault();
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    item.classList.add('active');
+
+    const tab = item.getAttribute('data-tab');
+    document.querySelectorAll('.section').forEach(s => s.style.display = 'none');
+    document.getElementById(tab).style.display = 'flex';
+  });
+});
+
+// Slogan rotator
+const slogans = [
+  "Money Follows Your Rules",
+  "Send Fast, Pay Less, Live More",
+  "Your Cash, Your Way, No Delay",
+  "Borders? Nah, We Broke 'Em",
+  "5% Flat. Zero Drama.",
+  "Wallet + Wings = Freedom",
+  "Nairobi Built, World Delivered",
+  "Cash Moves at the Speed of You"
+];
+
+let currentSlogan = 0;
+const sloganEl = document.querySelector('#slogan');
+
+function updateHomeSlogan() {
+  sloganEl.style.opacity = '0';
+  setTimeout(() => {
+    sloganEl.innerHTML = `<span class="slogan-text">${slogans[currentSlogan]}</span>`;
+    sloganEl.style.opacity = '1';
+    currentSlogan = (currentSlogan + 1) % slogans.length;
+  }, 800);
+}
+setInterval(updateHomeSlogan, 9000);
+updateHomeSlogan();
+
+// Slideshows
+const slideshows = {
+  send: ["Send to M-Pesa in seconds", "Flat 5% — no hidden fees", "Family, friends, freelancers", "100+ countries • 100+ currencies", "Instant or under 15 min delivery", "Crypto • Mobile money • Bank"],
+  wallet: ["One wallet for everything", "Fiat + Crypto + Stablecoins", "Instant conversions • Real rates", "Earn yield on stablecoins", "Virtual & physical card coming", "Full control • Zero lock-ups"],
+  rates: ["True mid-market rates", "Updated every few seconds", "No bank markup ever", "See exactly what you'll get", "KES, USD, EUR, NGN, ZAR...", "Transparency first"],
+  about: ["Born in Nairobi 2025", "Built for the global south", "Fighting high remittance fees", "Flat 5% — fair for everyone", "African team • African roots", "Money should empower, not exploit"],
+  support: ["Real humans 24/7", "Live chat • < 90 sec response", "Email • Phone • WhatsApp", "Swahili, English, French", "Transaction tracing in seconds", "Your peace of mind matters"]
+};
+
+function createSlideshow(containerId, texts) {
+  const container = document.getElementById(containerId);
+  if (!container) return;
+  let index = 0;
+  function showNext() {
+    container.innerHTML = '';
+    const span = document.createElement('span');
+    span.textContent = texts[index];
+    span.classList.add('active');
+    container.appendChild(span);
+    index = (index + 1) % texts.length;
+  }
+  showNext();
+  setInterval(showNext, 4000);
+}
+
+Object.keys(slideshows).forEach(key => {
+  createSlideshow(`${key}-slideshow`, slideshows[key]);
+});
+
+// Chatbot
+const botResponses = {
+  "How do I send money to M-Pesa?": "Enter the recipient’s phone number, amount, and select M-Pesa. Funds arrive in seconds. Flat 5% fee — no surprises.",
+  "What are the fees?": "Only a flat 5% on every transaction. No hidden charges, no exchange rate markups, no service fees added later.",
+  "Is my money safe?": "Yes — 256-bit encryption, 2FA, segregated accounts, real-time fraud monitoring. Your funds are always protected.",
+  "How long does a transfer take?": "Local mobile money (M-Pesa, Airtel, etc.): seconds to minutes. International: 2–15 minutes. Crypto: near-instant on-chain.",
+  "I have a problem with my account": "Describe the issue briefly or send a screenshot to support@hbsend.co.ke — our team will resolve it quickly.",
+  "How do I contact human support?": "Use this chat (fastest), email support@hbsend.co.ke, or call +254 700 000 999 (24/7, WhatsApp also available)."
+};
+
+function sendMessage(question) {
+  const messages = document.getElementById('chatMessages');
+  const options = document.getElementById('chatOptions');
+
+  messages.innerHTML += `<div class="message user-message">${question}</div>`;
+  messages.scrollTop = messages.scrollHeight;
+
+  const typing = document.createElement('div');
+  typing.className = 'message bot-message typing';
+  typing.textContent = 'Bot is typing...';
+  messages.appendChild(typing);
+  messages.scrollTop = messages.scrollHeight;
+
+  setTimeout(() => {
+    typing.remove();
+    messages.innerHTML += `<div class="message bot-message">${botResponses[question] || "Sorry, I don't have a specific answer for that yet. Please email support@hbsend.co.ke"}</div>`;
+    messages.scrollTop = messages.scrollHeight;
+  }, 1200);
+}
+</script>
+
+</body>
+</html>
