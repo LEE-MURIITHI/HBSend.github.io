@@ -1,0 +1,1346 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0"/>
+<title>HBSend — Global Money Transfers</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,700;0,9..144,900;1,9..144,500&family=Outfit:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet"/>
+<style>
+/* ═══════════════════════════════════════
+   ROOT & RESET
+═══════════════════════════════════════ */
+:root{
+  --bg:#020610;--navy:#060e24;--card:#0b1628;--card2:#0f1e38;
+  --border:rgba(255,255,255,.07);--border-g:rgba(0,210,122,.2);
+  --green:#00D27A;--green2:#009f5a;--glow:rgba(0,210,122,.18);
+  --gold:#FFB800;--blue:#3B7BFF;--red:#FF4D6A;
+  --white:#EEF3FF;--muted:rgba(238,243,255,.45);--muted2:rgba(238,243,255,.22);
+  --r:14px;--rs:9px;
+  --ease:cubic-bezier(.23,1,.32,1);
+  --nav-h:68px;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth;-webkit-tap-highlight-color:transparent}
+body{background:var(--bg);color:var(--white);font-family:'Outfit',sans-serif;font-size:16px;line-height:1.6;overflow-x:hidden;min-height:100vh}
+img{max-width:100%}
+button,input,select,textarea{font-family:inherit}
+
+/* ═══════════════════════════════════════
+   CANVAS BACKGROUND
+═══════════════════════════════════════ */
+#bg-canvas{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ═══════════════════════════════════════
+   NAV
+═══════════════════════════════════════ */
+nav{
+  position:fixed;top:0;left:0;right:0;z-index:900;
+  height:var(--nav-h);display:flex;align-items:center;
+  justify-content:space-between;padding:0 5vw;
+  background:rgba(2,6,16,.85);backdrop-filter:blur(20px);
+  border-bottom:1px solid var(--border);
+}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;flex-shrink:0}
+.logo-mark{
+  width:38px;height:38px;border-radius:10px;flex-shrink:0;
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Fraunces',serif;font-weight:900;font-size:16px;color:#020610;
+  box-shadow:0 0 18px var(--glow);
+}
+.logo-name{font-family:'Fraunces',serif;font-weight:700;font-size:19px;color:var(--white)}
+.logo-name em{color:var(--green);font-style:normal}
+.logo-sub{font-size:9px;letter-spacing:.12em;color:var(--muted2);text-transform:uppercase;font-family:'JetBrains Mono',monospace;display:block;margin-top:-2px}
+
+/* DESKTOP NAV LINKS */
+.nav-links{display:flex;align-items:center;gap:4px;list-style:none}
+.nav-links a{
+  display:flex;align-items:center;gap:6px;padding:7px 13px;
+  border-radius:8px;text-decoration:none;color:var(--muted);
+  font-size:13.5px;font-weight:500;transition:all .2s;white-space:nowrap;
+}
+.nav-links a .nav-ico{font-size:14px}
+.nav-links a:hover{color:var(--white);background:rgba(255,255,255,.05)}
+.nav-links a.active{color:var(--green);background:rgba(0,210,122,.08)}
+
+.nav-right{display:flex;align-items:center;gap:8px;flex-shrink:0}
+.nav-support{display:flex;gap:6px}
+.n-wa,.n-tg{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:15px;transition:all .2s;border:1px solid var(--border)}
+.n-wa{background:rgba(37,211,102,.08);border-color:rgba(37,211,102,.2)}
+.n-wa:hover{background:rgba(37,211,102,.18);transform:scale(1.06)}
+.n-tg{background:rgba(38,134,220,.08);border-color:rgba(38,134,220,.2)}
+.n-tg:hover{background:rgba(38,134,220,.18);transform:scale(1.06)}
+.btn-nav-ghost{padding:8px 18px;border:1px solid var(--border);border-radius:8px;background:transparent;color:var(--white);font-size:13px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;white-space:nowrap}
+.btn-nav-ghost:hover{border-color:rgba(255,255,255,.25);background:rgba(255,255,255,.05)}
+.btn-nav-green{padding:9px 20px;border-radius:8px;background:linear-gradient(135deg,var(--green),var(--green2));color:#020610;font-size:13px;font-weight:700;cursor:pointer;border:none;transition:all .2s;text-decoration:none;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;box-shadow:0 4px 18px rgba(0,210,122,.3)}
+.btn-nav-green:hover{transform:translateY(-1px);box-shadow:0 8px 28px rgba(0,210,122,.45)}
+
+/* HAMBURGER */
+.hamburger{display:none;flex-direction:column;justify-content:center;gap:5px;width:40px;height:40px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:9px;cursor:pointer;padding:9px;transition:all .2s}
+.hamburger span{display:block;height:1.5px;background:var(--white);border-radius:2px;transition:all .3s var(--ease)}
+.hamburger.open span:nth-child(1){transform:translateY(6.5px) rotate(45deg)}
+.hamburger.open span:nth-child(2){opacity:0;transform:scaleX(0)}
+.hamburger.open span:nth-child(3){transform:translateY(-6.5px) rotate(-45deg)}
+
+/* MOBILE DRAWER */
+.mobile-drawer{
+  position:fixed;top:var(--nav-h);left:0;right:0;z-index:850;
+  background:rgba(6,14,36,.97);backdrop-filter:blur(24px);
+  border-bottom:1px solid var(--border);
+  padding:20px 5vw 28px;
+  transform:translateY(-10px);opacity:0;pointer-events:none;
+  transition:all .3s var(--ease);
+}
+.mobile-drawer.open{transform:translateY(0);opacity:1;pointer-events:all}
+.mob-links{display:flex;flex-direction:column;gap:4px;margin-bottom:20px}
+.mob-links a{
+  display:flex;align-items:center;gap:12px;padding:13px 16px;
+  border-radius:var(--rs);text-decoration:none;color:var(--muted);
+  font-size:15px;font-weight:500;transition:all .2s;border:1px solid transparent;
+}
+.mob-links a .mob-ico{font-size:18px;width:26px;text-align:center}
+.mob-links a:hover,.mob-links a.active{color:var(--white);background:rgba(0,210,122,.07);border-color:rgba(0,210,122,.15)}
+.mob-links a.active{color:var(--green)}
+.mob-actions{display:flex;flex-direction:column;gap:10px;padding-top:16px;border-top:1px solid var(--border)}
+.mob-support{display:flex;gap:10px}
+.mob-wa,.mob-tg{flex:1;padding:11px;border-radius:var(--rs);display:flex;align-items:center;justify-content:center;gap:8px;font-size:13px;font-weight:600;text-decoration:none;transition:all .2s}
+.mob-wa{background:rgba(37,211,102,.12);border:1px solid rgba(37,211,102,.25);color:#25D366}
+.mob-tg{background:rgba(38,134,220,.12);border:1px solid rgba(38,134,220,.25);color:#229ED9}
+
+/* ═══════════════════════════════════════
+   PAGE SYSTEM
+═══════════════════════════════════════ */
+.page{display:none;min-height:calc(100vh - var(--nav-h));padding-top:var(--nav-h);position:relative;z-index:1;animation:pageIn .4s var(--ease) both}
+.page.active{display:block}
+@keyframes pageIn{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+/* ═══════════════════════════════════════
+   SHARED COMPONENTS
+═══════════════════════════════════════ */
+.container{max-width:1140px;margin:0 auto;padding:0 5vw}
+.page-hero{padding:64px 5vw 56px;text-align:center;max-width:720px;margin:0 auto}
+.page-eyebrow{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:14px}
+.page-h1{font-family:'Fraunces',serif;font-size:clamp(34px,6vw,68px);font-weight:900;line-height:.97;letter-spacing:-.025em}
+.page-h1 em{font-style:italic;color:var(--green)}
+.page-h1 .gold{color:var(--gold)}
+.page-desc{font-size:17px;color:var(--muted);font-weight:300;margin-top:18px;line-height:1.7;max-width:520px;margin-left:auto;margin-right:auto}
+
+/* Cards */
+.card{background:var(--card);border:1px solid var(--border);border-radius:var(--r)}
+.card-p{padding:28px}
+.card-p-lg{padding:36px}
+
+/* Buttons */
+.btn-primary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 34px;border-radius:10px;background:linear-gradient(135deg,var(--green),var(--green2));color:#020610;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all .2s;text-decoration:none;box-shadow:0 6px 28px rgba(0,210,122,.35)}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 12px 40px rgba(0,210,122,.5)}
+.btn-secondary{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:15px 32px;border-radius:10px;border:1.5px solid rgba(255,255,255,.15);background:rgba(255,255,255,.04);color:var(--white);font-size:15px;font-weight:500;cursor:pointer;transition:all .2s;text-decoration:none}
+.btn-secondary:hover{border-color:rgba(255,255,255,.35);background:rgba(255,255,255,.08)}
+.btn-full{width:100%;padding:14px;border-radius:var(--rs);background:linear-gradient(135deg,var(--green),var(--green2));color:#020610;font-family:'Outfit',sans-serif;font-size:15px;font-weight:700;cursor:pointer;border:none;transition:all .2s;box-shadow:0 4px 20px rgba(0,210,122,.28)}
+.btn-full:hover{transform:translateY(-1px);box-shadow:0 8px 30px rgba(0,210,122,.42)}
+.btn-outline-full{width:100%;padding:12px;border-radius:var(--rs);background:rgba(255,255,255,.04);color:var(--muted);font-size:14px;font-weight:500;cursor:pointer;border:1px solid var(--border);transition:all .2s;margin-top:10px}
+.btn-outline-full:hover{background:rgba(255,255,255,.08);color:var(--white)}
+
+/* Form inputs */
+.f-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px}
+.f-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted2);font-family:'JetBrains Mono',monospace}
+.f-input,.f-select{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--rs);padding:12px 14px;color:var(--white);font-family:'Outfit',sans-serif;font-size:14px;outline:none;transition:all .2s;width:100%;-webkit-appearance:none}
+.f-input::placeholder{color:rgba(255,255,255,.18)}
+.f-input:focus,.f-select:focus{border-color:rgba(0,210,122,.5);background:rgba(0,210,122,.03);box-shadow:0 0 0 3px rgba(0,210,122,.1)}
+.f-input.err{border-color:var(--red)!important;box-shadow:0 0 0 3px rgba(255,77,106,.1)!important}
+.f-select{background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='7' viewBox='0 0 12 7'%3E%3Cpath d='M1 1l5 4 5-4' stroke='rgba(238,243,255,0.3)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 13px center;padding-right:34px}
+.f-select option{background:var(--card);color:var(--white)}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:480px){.f-row{grid-template-columns:1fr}}
+.f-check{display:flex;align-items:flex-start;gap:10px;font-size:13px;color:var(--muted);margin-bottom:16px;line-height:1.5}
+.f-check input[type=checkbox]{width:16px;height:16px;margin-top:2px;accent-color:var(--green);flex-shrink:0;cursor:pointer}
+.f-check a{color:var(--green);text-decoration:none}
+.f-divider{display:flex;align-items:center;gap:10px;margin:16px 0;font-size:12px;color:var(--muted2)}
+.f-divider::before,.f-divider::after{content:'';flex:1;height:1px;background:var(--border)}
+
+/* Badges / pills */
+.eyebrow-pill{display:inline-flex;align-items:center;gap:8px;background:rgba(0,210,122,.06);border:1px solid rgba(0,210,122,.2);border-radius:100px;padding:6px 16px;font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.08em;color:var(--green);margin-bottom:24px}
+.live-dot{width:7px;height:7px;background:var(--green);border-radius:50%;animation:livePulse 1.8s infinite;flex-shrink:0}
+@keyframes livePulse{0%,100%{box-shadow:0 0 0 0 rgba(0,210,122,.5)}70%{box-shadow:0 0 0 7px rgba(0,210,122,0)}}
+.status-pill{display:inline-flex;align-items:center;gap:5px;font-family:'JetBrains Mono',monospace;font-size:11px;padding:4px 10px;border-radius:100px}
+.pill-green{color:var(--green);background:rgba(0,210,122,.1);border:1px solid rgba(0,210,122,.2)}
+.pill-gold{color:var(--gold);background:rgba(255,184,0,.1);border:1px solid rgba(255,184,0,.2)}
+.pill-muted{color:var(--muted2);background:rgba(255,255,255,.04);border:1px solid var(--border)}
+
+/* Section headings */
+.sec-tag{font-family:'JetBrains Mono',monospace;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--green);margin-bottom:10px}
+.sec-h2{font-family:'Fraunces',serif;font-size:clamp(28px,4vw,46px);font-weight:900;line-height:1.05;letter-spacing:-.02em}
+.sec-h2 em{font-style:italic;color:var(--green)}
+.sec-desc{color:var(--muted);font-size:15px;max-width:500px;margin-top:12px;font-weight:300;line-height:1.7}
+
+/* ═══════════════════════════════════════
+   PAGE: HOME
+═══════════════════════════════════════ */
+.home-hero{
+  min-height:calc(100vh - var(--nav-h));
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:60px 5vw 48px;text-align:center;position:relative;
+}
+.home-h1{font-family:'Fraunces',serif;font-size:clamp(44px,9vw,104px);font-weight:900;line-height:.92;letter-spacing:-.03em;max-width:900px}
+.home-h1 em{font-style:italic;color:var(--green)}
+.home-h1 .gold{color:var(--gold)}
+.home-desc{font-size:clamp(15px,2vw,19px);color:var(--muted);font-weight:300;max-width:520px;margin:24px auto 0;line-height:1.7}
+.home-actions{display:flex;gap:12px;flex-wrap:wrap;justify-content:center;margin-top:44px}
+.home-stats{
+  display:flex;gap:0;flex-wrap:wrap;justify-content:center;
+  border:1px solid var(--border);border-radius:var(--r);
+  background:rgba(11,22,40,.7);backdrop-filter:blur(16px);
+  overflow:hidden;margin-top:72px;width:100%;max-width:800px;
+}
+.stat-i{padding:24px 32px;text-align:center;border-right:1px solid var(--border);flex:1;min-width:120px}
+.stat-i:last-child{border-right:none}
+.stat-num{font-family:'Fraunces',serif;font-size:clamp(26px,3.5vw,38px);font-weight:900;line-height:1}
+.stat-num .g{color:var(--green)}
+.stat-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:5px;letter-spacing:.06em;text-transform:uppercase}
+
+/* Ticker strip */
+.ticker-strip{background:rgba(6,14,36,.9);border-top:1px solid var(--border);border-bottom:1px solid var(--border);padding:12px 0;overflow:hidden;position:relative;z-index:1}
+.ticker-inner{display:flex;gap:40px;width:max-content;animation:tickMove 30s linear infinite}
+@keyframes tickMove{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tick-item{white-space:nowrap;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:var(--muted);display:flex;align-items:center;gap:8px}
+.tick-amount{color:var(--white);font-weight:600}
+.tick-recv{color:var(--green)}
+.tick-sep{color:var(--border)}
+
+/* Quick nav cards on homepage */
+.quick-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 5vw 72px;max-width:1140px;margin:56px auto 0}
+@media(max-width:768px){.quick-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.quick-grid{grid-template-columns:1fr}}
+.quick-card{
+  background:var(--card);border:1px solid var(--border);border-radius:var(--r);
+  padding:28px 24px;cursor:pointer;transition:all .25s var(--ease);
+  display:flex;flex-direction:column;gap:12px;
+  position:relative;overflow:hidden;text-decoration:none;color:inherit;
+}
+.quick-card::before{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),transparent);transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease)}
+.quick-card:hover{transform:translateY(-5px);border-color:rgba(0,210,122,.18);box-shadow:0 20px 50px rgba(0,0,0,.45)}
+.quick-card:hover::before{transform:scaleX(1)}
+.qc-ico{font-size:30px}
+.qc-title{font-family:'Fraunces',serif;font-size:18px;font-weight:700}
+.qc-desc{font-size:13px;color:var(--muted);line-height:1.6}
+.qc-arrow{font-size:12px;color:var(--green);margin-top:auto;font-family:'JetBrains Mono',monospace;letter-spacing:.04em}
+
+/* ═══════════════════════════════════════
+   PAGE: SEND MONEY
+═══════════════════════════════════════ */
+.send-layout{
+  display:grid;grid-template-columns:1fr 1fr;gap:56px;
+  align-items:start;padding:48px 5vw 72px;max-width:1140px;margin:0 auto;
+}
+@media(max-width:900px){.send-layout{grid-template-columns:1fr;gap:40px}}
+
+.send-widget{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.sw-header{padding:18px 24px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.sw-title{font-family:'Fraunces',serif;font-size:17px;font-weight:700;display:flex;align-items:center;gap:8px}
+.sw-steps{display:flex;padding:16px 24px 0;gap:5px}
+.sw-step{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.08);transition:all .4s}
+.sw-step.done{background:var(--green)}
+.sw-step.active{background:var(--green);animation:stepBlink 1.5s infinite}
+@keyframes stepBlink{0%,100%{opacity:1}50%{opacity:.55}}
+.sw-body{padding:24px}
+.w-panel{display:none}
+.w-panel.show{display:block;animation:pIn .3s var(--ease)}
+@keyframes pIn{from{opacity:0;transform:translateX(14px)}to{opacity:1;transform:translateX(0)}}
+.w-lbl{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--muted2);margin-bottom:8px}
+.curr-row{display:flex;gap:9px;margin-bottom:14px}
+.curr-sel{flex:0 0 115px;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--rs);padding:11px;color:var(--white);font-family:'Outfit',sans-serif;font-size:13px;outline:none;cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='rgba(238,243,255,0.4)' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px;transition:border-color .2s}
+.curr-sel:focus{border-color:rgba(0,210,122,.4)}
+.curr-sel option{background:var(--card)}
+.curr-inp{flex:1;background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--rs);padding:11px 14px;color:var(--white);font-family:'Fraunces',serif;font-size:22px;font-weight:700;outline:none;transition:border-color .2s;min-width:0}
+.curr-inp:focus{border-color:rgba(0,210,122,.4)}
+.curr-inp::placeholder{color:rgba(255,255,255,.15);font-size:18px}
+.rate-bar{background:rgba(0,210,122,.06);border:1px solid rgba(0,210,122,.15);border-radius:var(--rs);padding:12px 14px;margin-bottom:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
+.rate-txt{font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--green)}
+.fee-txt{font-size:12px;color:var(--muted)}
+.recv-box{background:rgba(255,255,255,.03);border:1px solid var(--border);border-radius:var(--rs);padding:14px;margin-bottom:18px}
+.recv-num{font-family:'Fraunces',serif;font-size:28px;font-weight:900;color:var(--green)}
+.recv-sub{font-size:11px;color:var(--muted);margin-top:2px;font-family:'JetBrains Mono',monospace}
+.del-opts{display:flex;flex-direction:column;gap:9px;margin-bottom:16px}
+.del-opt{padding:12px 14px;border:1px solid var(--border);border-radius:var(--rs);cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:11px;background:rgba(255,255,255,.02)}
+.del-opt:hover{border-color:rgba(0,210,122,.3);background:rgba(0,210,122,.04)}
+.del-opt.sel{border-color:var(--green);background:rgba(0,210,122,.07)}
+.del-opt .d-ico{font-size:18px;width:30px;text-align:center;flex-shrink:0}
+.del-opt .d-name{font-size:13px;font-weight:600}
+.del-opt .d-time{font-size:10px;color:var(--muted);font-family:'JetBrains Mono',monospace}
+.del-opt .d-chk{margin-left:auto;width:18px;height:18px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:10px;transition:all .2s;flex-shrink:0}
+.del-opt.sel .d-chk{background:var(--green);border-color:var(--green);color:#020610}
+.review-tbl{margin-bottom:18px}
+.rv-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border);font-size:13px;gap:12px}
+.rv-row:last-child{border-bottom:none;font-weight:700;font-size:15px;padding-top:14px}
+.rv-row span:first-child{color:var(--muted);flex-shrink:0}
+.rv-row span:last-child{font-family:'JetBrains Mono',monospace;text-align:right}
+.lock-bar{background:rgba(255,184,0,.06);border:1px solid rgba(255,184,0,.2);border-radius:var(--rs);padding:11px 13px;font-size:11px;color:var(--muted);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.success-wrap{text-align:center;padding:16px 0}
+.success-ico{font-size:58px;animation:bounceIn .5s var(--ease)}
+@keyframes bounceIn{from{transform:scale(0)}70%{transform:scale(1.15)}to{transform:scale(1)}}
+.success-wrap h3{font-family:'Fraunces',serif;font-size:24px;font-weight:900;margin-top:14px;color:var(--green)}
+.success-wrap p{color:var(--muted);font-size:13px;margin-top:8px;line-height:1.6}
+.ref-code{font-family:'JetBrains Mono',monospace;font-size:12px;background:rgba(0,210,122,.08);border:1px solid rgba(0,210,122,.2);padding:9px 14px;border-radius:var(--rs);margin:14px 0;color:var(--green);letter-spacing:.04em}
+.support-line{font-size:12px;color:var(--muted);margin-top:12px}
+.support-line a{color:var(--green);text-decoration:none;margin:0 4px}
+
+/* How it works steps */
+.steps-row{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-radius:var(--r);overflow:hidden;margin:0 5vw 72px;max-width:1140px;margin-left:auto;margin-right:auto}
+@media(max-width:720px){.steps-row{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.steps-row{grid-template-columns:1fr}}
+.step-box{background:var(--card);padding:32px 24px;position:relative;overflow:hidden;transition:background .2s;border-right:1px solid var(--border)}
+.step-box:last-child{border-right:none}
+@media(max-width:720px){.step-box{border-right:1px solid var(--border);border-bottom:1px solid var(--border)}}
+.step-box:hover{background:var(--card2)}
+.step-n{font-family:'Fraunces',serif;font-size:64px;font-weight:900;color:rgba(0,210,122,.06);position:absolute;top:10px;right:14px;line-height:1}
+.step-ico{width:48px;height:48px;border-radius:12px;background:rgba(0,210,122,.1);border:1px solid rgba(0,210,122,.2);display:flex;align-items:center;justify-content:center;font-size:20px;margin-bottom:16px;transition:all .3s}
+.step-box:hover .step-ico{transform:scale(1.08);box-shadow:0 6px 20px rgba(0,210,122,.18)}
+.step-box h3{font-family:'Fraunces',serif;font-size:17px;font-weight:700;margin-bottom:8px}
+.step-box p{font-size:12px;color:var(--muted);line-height:1.7}
+
+/* ═══════════════════════════════════════
+   PAGE: RATES
+═══════════════════════════════════════ */
+.rates-grid{display:grid;grid-template-columns:1fr 1fr;gap:48px;padding:0 5vw 72px;max-width:1140px;margin:0 auto}
+@media(max-width:860px){.rates-grid{grid-template-columns:1fr}}
+.calc-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px}
+.calc-h{font-family:'Fraunces',serif;font-size:18px;font-weight:700;margin-bottom:22px;display:flex;align-items:center;gap:8px}
+.calc-flag-inp{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:center;margin-bottom:10px}
+.c-flag{font-size:22px}
+.c-inp{background:rgba(255,255,255,.05);border:1px solid var(--border);border-radius:var(--rs);padding:10px 14px;color:var(--white);font-family:'Fraunces',serif;font-size:20px;font-weight:700;outline:none;transition:border-color .2s;width:100%}
+.c-inp:focus{border-color:rgba(0,210,122,.4)}
+.swap-bar{width:100%;padding:10px;background:rgba(0,210,122,.07);border:1px solid rgba(0,210,122,.18);border-radius:var(--rs);color:var(--green);font-size:16px;cursor:pointer;transition:all .2s;margin:10px 0}
+.swap-bar:hover{background:rgba(0,210,122,.14)}
+.rate-info-bar{background:rgba(0,210,122,.06);border:1px solid rgba(0,210,122,.15);border-radius:var(--rs);padding:12px 14px;margin-top:14px}
+.rib-rate{font-family:'JetBrains Mono',monospace;font-size:13px;color:var(--green)}
+.rib-sub{font-size:10px;color:var(--muted);margin-top:3px;font-family:'JetBrains Mono',monospace}
+.rates-list{display:flex;flex-direction:column;gap:10px}
+.rate-item{background:var(--card);border:1px solid var(--border);border-radius:var(--rs);padding:13px 16px;display:flex;align-items:center;gap:12px;transition:all .2s}
+.rate-item:hover{border-color:rgba(0,210,122,.22);transform:translateX(4px)}
+.ri-flags{display:flex;gap:3px;font-size:18px}
+.ri-info{flex:1;min-width:0}
+.ri-pair{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);text-transform:uppercase}
+.ri-val{font-family:'Fraunces',serif;font-size:16px;font-weight:700}
+.ri-chg{font-family:'JetBrains Mono',monospace;font-size:11px;padding:3px 8px;border-radius:100px;white-space:nowrap}
+.ri-chg.up{color:var(--green);background:rgba(0,210,122,.1)}
+.ri-chg.dn{color:var(--red);background:rgba(255,77,106,.1)}
+
+/* ═══════════════════════════════════════
+   PAGE: FEATURES
+═══════════════════════════════════════ */
+.feat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 5vw 72px;max-width:1140px;margin:0 auto}
+@media(max-width:860px){.feat-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:500px){.feat-grid{grid-template-columns:1fr}}
+.feat-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:28px;transition:all .25s var(--ease);cursor:default;position:relative;overflow:hidden}
+.feat-card::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 80% 20%,rgba(0,210,122,.05),transparent 60%);opacity:0;transition:opacity .3s}
+.feat-card:hover{transform:translateY(-5px);border-color:rgba(0,210,122,.18);box-shadow:0 20px 50px rgba(0,0,0,.4)}
+.feat-card:hover::after{opacity:1}
+.feat-card.span2{grid-column:span 2}
+@media(max-width:500px){.feat-card.span2{grid-column:span 1}}
+.fc-ico{font-size:28px;margin-bottom:16px}
+.feat-card h3{font-family:'Fraunces',serif;font-size:19px;font-weight:700;margin-bottom:9px}
+.feat-card p{font-size:13px;color:var(--muted);line-height:1.7}
+.fc-tag{display:inline-flex;align-items:center;margin-top:14px;padding:4px 11px;background:rgba(0,210,122,.07);border:1px solid rgba(0,210,122,.16);border-radius:100px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green)}
+
+/* ═══════════════════════════════════════
+   PAGE: ACCOUNT
+═══════════════════════════════════════ */
+.account-wrap{display:grid;grid-template-columns:1fr 1fr;gap:56px;padding:0 5vw 72px;max-width:1060px;margin:0 auto;align-items:start}
+@media(max-width:860px){.account-wrap{grid-template-columns:1fr}}
+.acc-card{background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 32px 80px rgba(0,0,0,.5)}
+.acc-tabs-bar{display:flex;background:rgba(255,255,255,.03);border-bottom:1px solid var(--border)}
+.acc-tab{flex:1;padding:15px;text-align:center;font-size:13px;font-weight:600;cursor:pointer;transition:all .2s;color:var(--muted);border-bottom:2px solid transparent}
+.acc-tab.on{color:var(--green);border-bottom-color:var(--green);background:rgba(0,210,122,.04)}
+.acc-body{padding:28px}
+.pwd-wrap{position:relative}
+.pwd-wrap .f-input{padding-right:44px}
+.pwd-eye{position:absolute;right:13px;top:50%;transform:translateY(-50%);background:none;border:none;color:var(--muted);cursor:pointer;font-size:14px;padding:0;transition:color .2s}
+.pwd-eye:hover{color:var(--white)}
+.str-bars{display:flex;gap:4px;margin-top:5px}
+.str-b{flex:1;height:3px;border-radius:2px;background:rgba(255,255,255,.07);transition:background .3s}
+.str-b.s1{background:var(--red)}.str-b.s2{background:var(--gold)}.str-b.s3,.str-b.s4{background:var(--green)}
+.str-txt{font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:4px}
+.soc-btn{width:100%;padding:12px;border:1px solid var(--border);border-radius:var(--rs);background:rgba(255,255,255,.03);color:var(--white);font-size:13px;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:9px;margin-bottom:9px}
+.soc-btn:hover{background:rgba(255,255,255,.07);border-color:rgba(255,255,255,.17)}
+.acc-perks{padding:8px 0}
+.perk{display:flex;gap:14px;margin-bottom:26px;transition:transform .2s}
+.perk:hover{transform:translateX(5px)}
+.perk-ico{width:46px;height:46px;flex-shrink:0;border-radius:12px;background:rgba(0,210,122,.08);border:1px solid rgba(0,210,122,.18);display:flex;align-items:center;justify-content:center;font-size:20px;transition:all .3s}
+.perk:hover .perk-ico{background:rgba(0,210,122,.15);box-shadow:0 6px 20px rgba(0,210,122,.18)}
+.perk h4{font-family:'Fraunces',serif;font-weight:700;margin-bottom:3px;font-size:16px}
+.perk p{font-size:12px;color:var(--muted);line-height:1.6}
+
+/* ═══════════════════════════════════════
+   PAGE: SECURITY
+═══════════════════════════════════════ */
+.sec-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:0 5vw;max-width:1140px;margin:0 auto 48px}
+@media(max-width:800px){.sec-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.sec-grid{grid-template-columns:1fr}}
+.sec-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:26px;transition:all .25s var(--ease);position:relative;overflow:hidden;cursor:default}
+.sec-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--green),transparent);transform:scaleX(0);transform-origin:left;transition:transform .35s var(--ease)}
+.sec-card:hover{transform:translateY(-4px);border-color:rgba(0,210,122,.15);box-shadow:0 18px 46px rgba(0,0,0,.38)}
+.sec-card:hover::before{transform:scaleX(1)}
+.sc-ico{font-size:26px;margin-bottom:12px}
+.sec-card h3{font-family:'Fraunces',serif;font-size:16px;font-weight:700;margin-bottom:7px}
+.sec-card p{font-size:12px;color:var(--muted);line-height:1.65}
+.sc-badge{display:flex;align-items:center;gap:5px;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--green)}
+.sc-badge::before{content:'';width:5px;height:5px;background:var(--green);border-radius:50%;flex-shrink:0}
+.compliance-strip{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;padding:0 5vw 72px;max-width:1140px;margin:0 auto}
+.comp-chip{padding:10px 18px;border:1px solid var(--border);border-radius:var(--rs);display:flex;align-items:center;gap:8px;font-size:12px;font-weight:500;background:var(--card);transition:all .2s}
+.comp-chip:hover{border-color:rgba(0,210,122,.22);transform:translateY(-2px)}
+
+/* ═══════════════════════════════════════
+   PAGE: INTEGRATIONS
+═══════════════════════════════════════ */
+.api-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;padding:0 5vw;max-width:1140px;margin:0 auto 40px}
+@media(max-width:800px){.api-grid{grid-template-columns:1fr 1fr}}
+@media(max-width:480px){.api-grid{grid-template-columns:1fr}}
+.api-card{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:22px;transition:all .25s var(--ease)}
+.api-card:hover{transform:translateY(-4px);border-color:rgba(0,210,122,.2);box-shadow:0 18px 44px rgba(0,0,0,.4)}
+.api-logo{font-size:26px;margin-bottom:10px}
+.api-card h4{font-family:'Fraunces',serif;font-size:15px;font-weight:700;margin-bottom:5px}
+.api-card p{font-size:11.5px;color:var(--muted);line-height:1.6}
+.api-tag{display:inline-flex;align-items:center;gap:4px;margin-top:12px;font-family:'JetBrains Mono',monospace;font-size:10px}
+.api-tag.next{color:var(--gold)}
+.api-tag.next::before{content:'';width:5px;height:5px;background:var(--gold);border-radius:50%;animation:livePulse 1.5s infinite}
+.api-tag.pend{color:var(--muted2)}
+.api-tag.pend::before{content:'';width:5px;height:5px;background:var(--muted2);border-radius:50%}
+.roadmap-box{background:var(--card);border:1px solid var(--border);border-radius:var(--r);padding:32px;margin:0 5vw 72px;max-width:1140px;margin-left:auto;margin-right:auto}
+@media(max-width:600px){.roadmap-box{margin-left:5vw;margin-right:5vw}}
+.rm-h{font-family:'Fraunces',serif;font-size:22px;font-weight:700;margin-bottom:6px}
+.rm-sub{font-size:13px;color:var(--muted);margin-bottom:24px}
+.rm-step{display:flex;gap:14px;padding:15px 16px;border-radius:var(--rs);margin-bottom:10px}
+.rm-step.hi{background:rgba(0,210,122,.06);border:1px solid rgba(0,210,122,.18)}
+.rm-step.lo{background:rgba(255,255,255,.02);border:1px solid var(--border)}
+.rm-num{width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:900;font-size:14px;flex-shrink:0}
+.rm-step.hi .rm-num{background:var(--green);color:#020610}
+.rm-step.lo .rm-num{background:var(--card2);color:var(--muted)}
+.rm-step strong{font-size:13px;font-weight:600;display:block;margin-bottom:3px}
+.rm-step span{font-size:12px;color:var(--muted);line-height:1.6}
+code{background:rgba(255,255,255,.07);padding:1px 6px;border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--green)}
+
+/* ═══════════════════════════════════════
+   FOOTER
+═══════════════════════════════════════ */
+footer{position:relative;z-index:1;background:var(--bg);border-top:1px solid var(--border);padding:56px 5vw 32px}
+.footer-inner{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:44px;margin-bottom:48px;max-width:1140px;margin-left:auto;margin-right:auto}
+@media(max-width:768px){.footer-inner{grid-template-columns:1fr 1fr}}
+@media(max-width:440px){.footer-inner{grid-template-columns:1fr}}
+.fb-brand p{font-size:13px;color:var(--muted);margin-top:12px;max-width:250px;line-height:1.7}
+.fb-social{display:flex;gap:8px;margin-top:16px}
+.fb-soc{width:34px;height:34px;border-radius:8px;border:1px solid var(--border);background:rgba(255,255,255,.03);display:flex;align-items:center;justify-content:center;font-size:14px;text-decoration:none;transition:all .2s}
+.fb-soc:hover{border-color:rgba(255,255,255,.22);transform:translateY(-2px)}
+.fg h5{font-family:'Fraunces',serif;font-size:13px;font-weight:700;margin-bottom:14px}
+.fg a{display:block;font-size:12px;color:var(--muted);text-decoration:none;margin-bottom:9px;transition:color .2s}
+.fg a:hover{color:var(--white)}
+.footer-bot{border-top:1px solid var(--border);padding-top:24px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;max-width:1140px;margin:0 auto}
+.footer-bot p{font-size:11px;color:var(--muted2)}
+.hbs-tag{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted2)}
+.hbs-tag a{color:var(--green);text-decoration:none}
+
+/* ═══════════════════════════════════════
+   FLOATING SUPPORT + TOAST
+═══════════════════════════════════════ */
+.float-support{position:fixed;bottom:24px;right:20px;z-index:950;display:flex;flex-direction:column;gap:10px;align-items:flex-end}
+.fs-toggle{width:54px;height:54px;border-radius:50%;background:linear-gradient(135deg,var(--green),var(--green2));color:#020610;font-size:22px;display:flex;align-items:center;justify-content:center;cursor:pointer;border:none;box-shadow:0 6px 28px rgba(0,210,122,.45);transition:all .25s;flex-shrink:0}
+.fs-toggle:hover{transform:scale(1.07)}
+.fs-menu{display:flex;flex-direction:column;gap:8px;align-items:flex-end;opacity:0;transform:translateY(12px) scale(.95);pointer-events:none;transition:all .28s var(--ease)}
+.fs-menu.open{opacity:1;transform:translateY(0) scale(1);pointer-events:all}
+.fs-lbl{font-size:10px;color:var(--muted2);font-family:'JetBrains Mono',monospace;text-align:right;padding-right:2px}
+.fs-btn{display:flex;align-items:center;gap:9px;padding:11px 16px;border-radius:100px;font-size:12px;font-weight:700;cursor:pointer;text-decoration:none;transition:all .2s;white-space:nowrap;border:none}
+.fs-wa{background:#25D366;color:#fff;box-shadow:0 4px 16px rgba(37,211,102,.35)}
+.fs-wa:hover{transform:translateX(-4px);box-shadow:0 6px 24px rgba(37,211,102,.5)}
+.fs-tg{background:#229ED9;color:#fff;box-shadow:0 4px 16px rgba(34,158,217,.3)}
+.fs-tg:hover{transform:translateX(-4px);box-shadow:0 6px 24px rgba(34,158,217,.45)}
+
+#toasts{position:fixed;top:80px;right:16px;z-index:960;display:flex;flex-direction:column;gap:9px;max-width:300px;width:calc(100vw - 32px)}
+.toast{background:var(--card2);border:1px solid var(--border);border-radius:11px;padding:12px 16px;display:flex;align-items:center;gap:10px;font-size:12.5px;box-shadow:0 10px 28px rgba(0,0,0,.5);animation:toastIn .3s var(--ease)}
+@keyframes toastIn{from{opacity:0;transform:translateX(100%)}to{opacity:1;transform:translateX(0)}}
+.toast.out{animation:toastOut .3s var(--ease) forwards}
+@keyframes toastOut{to{opacity:0;transform:translateX(110%)}}
+.toast-g{border-left:3px solid var(--green)}
+.toast-o{border-left:3px solid var(--gold)}
+
+/* MODAL */
+.modal-ov{position:fixed;inset:0;z-index:970;background:rgba(2,6,16,.92);backdrop-filter:blur(12px);display:none;align-items:center;justify-content:center;padding:16px}
+.modal-ov.open{display:flex}
+.modal{background:var(--card);border:1px solid var(--border);border-radius:18px;width:min(460px,100%);padding:36px;position:relative;animation:mIn .3s var(--ease);max-height:90vh;overflow-y:auto}
+@keyframes mIn{from{opacity:0;transform:scale(.93)translateY(20px)}to{opacity:1;transform:scale(1)translateY(0)}}
+.m-close{position:absolute;top:16px;right:16px;width:30px;height:30px;border-radius:8px;background:rgba(255,255,255,.06);border:none;color:var(--muted);font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all .2s}
+.m-close:hover{background:rgba(255,255,255,.12);color:var(--white)}
+.m-h{font-family:'Fraunces',serif;font-size:24px;font-weight:900;margin-bottom:5px}
+.m-sub{font-size:12px;color:var(--muted);margin-bottom:24px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:rgba(0,210,122,.25);border-radius:3px}
+
+/* ── MOBILE REFINEMENTS ── */
+@media(max-width:640px){
+  .home-actions{flex-direction:column;align-items:center}
+  .home-actions .btn-primary,.home-actions .btn-secondary{width:100%;max-width:320px}
+  .home-stats{border-radius:var(--r)}
+  .stat-i{min-width:100px;padding:18px 16px}
+  .stat-num{font-size:24px}
+  .quick-grid{padding:0 4vw 56px}
+  .send-layout{padding:32px 4vw 56px}
+  .steps-row{margin:0 4vw 56px}
+  .rates-grid,.feat-grid,.sec-grid,.api-grid{padding:0 4vw}
+  .account-wrap,.compliance-strip{padding:0 4vw 56px}
+  .roadmap-box,.feat-grid{margin-bottom:56px}
+  .page-hero{padding:44px 4vw 40px}
+  .page-h1{font-size:34px}
+  .feat-grid{padding-bottom:56px}
+  .sec-grid{margin-bottom:32px}
+  .float-support{bottom:16px;right:12px}
+}
+
+/* ── DESKTOP REFINEMENTS ── */
+@media(min-width:1100px){
+  .nav-links{gap:2px}
+}
+@media(max-width:1024px) and (min-width:769px){
+  .nav-links a{padding:6px 10px;font-size:13px}
+}
+@media(max-width:768px){
+  .nav-links,.nav-right .btn-nav-ghost,.nav-right .btn-nav-green,.nav-support{display:none}
+  .hamburger{display:flex}
+}
+</style>
+</head>
+<body>
+
+<canvas id="bg-canvas"></canvas>
+
+<!-- ═══ NAV ═══ -->
+<nav id="main-nav">
+  <a class="logo" href="#" onclick="goto('home');return false">
+    <div class="logo-mark">H</div>
+    <div>
+      <span class="logo-name">HB<em>Send</em></span>
+      <span class="logo-sub">HBS Tunnelytics</span>
+    </div>
+  </a>
+
+  <ul class="nav-links">
+    <li><a href="#" onclick="goto('home');return false" data-page="home"><span class="nav-ico">🏠</span>Home</a></li>
+    <li><a href="#" onclick="goto('send');return false" data-page="send"><span class="nav-ico">💸</span>Send Money</a></li>
+    <li><a href="#" onclick="goto('rates');return false" data-page="rates"><span class="nav-ico">📈</span>Rates</a></li>
+    <li><a href="#" onclick="goto('features');return false" data-page="features"><span class="nav-ico">✨</span>Features</a></li>
+    <li><a href="#" onclick="goto('security');return false" data-page="security"><span class="nav-ico">🔐</span>Security</a></li>
+    <li><a href="#" onclick="goto('integrations');return false" data-page="integrations"><span class="nav-ico">🔌</span>Integrations</a></li>
+  </ul>
+
+  <div class="nav-right">
+    <div class="nav-support">
+      <a class="n-wa" href="https://wa.me/254114752255" target="_blank" title="WhatsApp">💬</a>
+      <a class="n-tg" href="https://t.me/Girltalisha" target="_blank" title="Telegram">✈️</a>
+    </div>
+    <a href="#" class="btn-nav-ghost" onclick="openModal('login');return false">Log In</a>
+    <a href="#" class="btn-nav-green" onclick="goto('account');return false">Get Started →</a>
+  </div>
+
+  <button class="hamburger" id="hamburger" onclick="toggleDrawer()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- MOBILE DRAWER -->
+<div class="mobile-drawer" id="mob-drawer">
+  <nav class="mob-links">
+    <a href="#" onclick="goto('home');closeDrawer();return false" data-page="home"><span class="mob-ico">🏠</span>Home</a>
+    <a href="#" onclick="goto('send');closeDrawer();return false" data-page="send"><span class="mob-ico">💸</span>Send Money</a>
+    <a href="#" onclick="goto('rates');closeDrawer();return false" data-page="rates"><span class="mob-ico">📈</span>Live Rates</a>
+    <a href="#" onclick="goto('features');closeDrawer();return false" data-page="features"><span class="mob-ico">✨</span>Features</a>
+    <a href="#" onclick="goto('security');closeDrawer();return false" data-page="security"><span class="mob-ico">🔐</span>Security</a>
+    <a href="#" onclick="goto('integrations');closeDrawer();return false" data-page="integrations"><span class="mob-ico">🔌</span>Integrations</a>
+  </nav>
+  <div class="mob-actions">
+    <div class="mob-support">
+      <a class="mob-wa" href="https://wa.me/254114752255" target="_blank">💬 WhatsApp</a>
+      <a class="mob-tg" href="https://t.me/Girltalisha" target="_blank">✈️ Telegram</a>
+    </div>
+    <button class="btn-full" onclick="goto('account');closeDrawer()">Create Free Account →</button>
+    <button class="btn-outline-full" onclick="openModal('login');closeDrawer()">Log In</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: HOME
+══════════════════════════════════════════ -->
+<div class="page active" id="page-home">
+  <div class="home-hero">
+    <div class="eyebrow-pill"><span class="live-dot"></span>Live in 80+ Countries &nbsp;·&nbsp; Zero Monthly Fees</div>
+    <h1 class="home-h1">Move Money<br/><em>Across</em> the World<br/>in <span class="gold">Seconds.</span></h1>
+    <p class="home-desc">HBSend by HBS Tunnelytics — real exchange rates, instant delivery, bank-grade security. No surprises, ever.</p>
+    <div class="home-actions">
+      <a href="#" class="btn-primary" onclick="goto('account');return false">Open Free Account →</a>
+      <a href="#" class="btn-secondary" onclick="goto('send');return false">▶ Try the Calculator</a>
+    </div>
+    <div class="home-stats">
+      <div class="stat-i"><div class="stat-num">$<span class="g">2.4B</span></div><div class="stat-lbl">Transferred</div></div>
+      <div class="stat-i"><div class="stat-num"><span class="g">80</span>+</div><div class="stat-lbl">Countries</div></div>
+      <div class="stat-i"><div class="stat-num"><span class="g">0.4</span>%</div><div class="stat-lbl">Avg Fee</div></div>
+      <div class="stat-i"><div class="stat-num">&lt;<span class="g">60</span>s</div><div class="stat-lbl">Delivery</div></div>
+      <div class="stat-i"><div class="stat-num"><span class="g">160</span>+</div><div class="stat-lbl">Currencies</div></div>
+    </div>
+  </div>
+
+  <!-- Ticker -->
+  <div class="ticker-strip">
+    <div class="ticker-inner" id="ticker-el"></div>
+  </div>
+
+  <!-- Quick nav grid -->
+  <div class="quick-grid">
+    <a class="quick-card" href="#" onclick="goto('send');return false">
+      <div class="qc-ico">💸</div>
+      <div class="qc-title">Send Money</div>
+      <div class="qc-desc">Instant international transfers. Real rates, no hidden fees. 80+ countries.</div>
+      <div class="qc-arrow">Open Calculator →</div>
+    </a>
+    <a class="quick-card" href="#" onclick="goto('rates');return false">
+      <div class="qc-ico">📈</div>
+      <div class="qc-title">Live Rates</div>
+      <div class="qc-desc">Mid-market exchange rates updated in real time for 160+ currency pairs.</div>
+      <div class="qc-arrow">View Rates →</div>
+    </a>
+    <a class="quick-card" href="#" onclick="goto('features');return false">
+      <div class="qc-ico">✨</div>
+      <div class="qc-title">Features</div>
+      <div class="qc-desc">Multi-currency wallet, batch payouts, mobile apps, and more built in.</div>
+      <div class="qc-arrow">Explore →</div>
+    </a>
+    <a class="quick-card" href="#" onclick="goto('security');return false">
+      <div class="qc-ico">🔐</div>
+      <div class="qc-title">Security</div>
+      <div class="qc-desc">PCI DSS Level 1, GDPR, FinCEN, biometrics, and Stripe Radar fraud detection.</div>
+      <div class="qc-arrow">Learn More →</div>
+    </a>
+    <a class="quick-card" href="#" onclick="goto('account');return false">
+      <div class="qc-ico">🙋</div>
+      <div class="qc-title">Get Started</div>
+      <div class="qc-desc">Create your free account in under 2 minutes. No credit card required.</div>
+      <div class="qc-arrow">Sign Up Free →</div>
+    </a>
+    <a class="quick-card" href="https://wa.me/254114752255" target="_blank">
+      <div class="qc-ico">💬</div>
+      <div class="qc-title">Live Support</div>
+      <div class="qc-desc">Real humans on WhatsApp and Telegram — usually replies in under 2 minutes.</div>
+      <div class="qc-arrow">Chat Now →</div>
+    </a>
+  </div>
+  <footer-el></footer-el>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: SEND MONEY
+══════════════════════════════════════════ -->
+<div class="page" id="page-send">
+  <div class="page-hero">
+    <div class="page-eyebrow">— Send Money</div>
+    <h1 class="page-h1">Fast. Transparent.<br/><em>No hidden fees.</em></h1>
+    <p class="page-desc">See exactly what your recipient gets before you confirm. Mid-market rates, always. Funds arrive in seconds via HBS Tunnelytics routing.</p>
+  </div>
+
+  <div class="send-layout">
+    <!-- LEFT: Trust info -->
+    <div>
+      <div class="sec-tag">Why choose HBSend?</div>
+      <h2 class="sec-h2" style="margin-bottom:20px">The smarter way<br/>to <em>send globally.</em></h2>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-bottom:36px">
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(0,210,122,.1);border:1px solid rgba(0,210,122,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">⚡</div>
+          <div><div style="font-weight:600;margin-bottom:3px;font-size:14px">Instant Settlement</div><div style="font-size:12px;color:var(--muted)">Most transfers arrive in under 60 seconds via our Tunnelytics routing engine.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(0,210,122,.1);border:1px solid rgba(0,210,122,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">💡</div>
+          <div><div style="font-weight:600;margin-bottom:3px;font-size:14px">Mid-market Rates</div><div style="font-size:12px;color:var(--muted)">We use real exchange rates — no inflated margins. You see exactly what your recipient gets.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(0,210,122,.1);border:1px solid rgba(0,210,122,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">🔒</div>
+          <div><div style="font-weight:600;margin-bottom:3px;font-size:14px">Bank-grade Security</div><div style="font-size:12px;color:var(--muted)">256-bit AES encryption, PCI DSS Level 1, and Stripe Radar fraud detection on every transfer.</div></div>
+        </div>
+        <div style="display:flex;gap:12px;align-items:flex-start">
+          <div style="width:36px;height:36px;border-radius:9px;background:rgba(0,210,122,.1);border:1px solid rgba(0,210,122,.2);display:flex;align-items:center;justify-content:center;font-size:16px;flex-shrink:0">📱</div>
+          <div><div style="font-weight:600;margin-bottom:3px;font-size:14px">Multiple Delivery Options</div><div style="font-size:12px;color:var(--muted)">Bank transfer, mobile money (M-Pesa, MTN), cash pickup, or HBSend wallet — your choice.</div></div>
+        </div>
+      </div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px">
+        <span class="status-pill pill-green">✔ PCI DSS L1</span>
+        <span class="status-pill pill-green">✔ 256-bit Encrypted</span>
+        <span class="status-pill pill-green">✔ 80+ Countries</span>
+        <span class="status-pill pill-muted">○ Auth needed for live payments</span>
+      </div>
+    </div>
+
+    <!-- RIGHT: Widget -->
+    <div class="send-widget">
+      <div class="sw-header">
+        <span class="sw-title">💸 Transfer</span>
+        <span class="status-pill pill-green" style="font-size:10px"><span class="live-dot" style="width:5px;height:5px"></span>Live rates</span>
+      </div>
+      <div class="sw-steps">
+        <div class="sw-step active" id="ss1"></div>
+        <div class="sw-step" id="ss2"></div>
+        <div class="sw-step" id="ss3"></div>
+        <div class="sw-step" id="ss4"></div>
+        <div class="sw-step" id="ss5"></div>
+      </div>
+      <div class="sw-body">
+        <!-- Step 1 -->
+        <div class="w-panel show" id="wp1">
+          <div class="w-lbl">You Send</div>
+          <div class="curr-row">
+            <select class="curr-sel" id="from-c" onchange="doCalc()">
+              <option value="USD">🇺🇸 USD</option><option value="EUR">🇪🇺 EUR</option>
+              <option value="GBP">🇬🇧 GBP</option><option value="CAD">🇨🇦 CAD</option>
+              <option value="AUD">🇦🇺 AUD</option>
+            </select>
+            <input class="curr-inp" id="snd-amt" type="number" value="500" placeholder="Amount" oninput="doCalc()"/>
+          </div>
+          <div class="rate-bar">
+            <span class="rate-txt" id="rate-show">1 USD = 1,520.34 NGN</span>
+            <span class="fee-txt">Fee: <strong style="color:var(--green)">0.4%</strong></span>
+          </div>
+          <div class="w-lbl">Recipient Gets</div>
+          <div style="display:flex;gap:9px;margin-bottom:20px;align-items:stretch">
+            <select class="curr-sel" id="to-c" onchange="doCalc()">
+              <option value="NGN">🇳🇬 NGN</option><option value="KES">🇰🇪 KES</option>
+              <option value="GHS">🇬🇭 GHS</option><option value="ZAR">🇿🇦 ZAR</option>
+              <option value="XOF">🌍 XOF</option><option value="INR">🇮🇳 INR</option>
+              <option value="BRL">🇧🇷 BRL</option><option value="MXN">🇲🇽 MXN</option>
+              <option value="PHP">🇵🇭 PHP</option>
+            </select>
+            <div class="recv-box" style="flex:1;margin:0">
+              <div class="recv-num" id="recv-amt">757,370</div>
+              <div class="recv-sub">After all fees &amp; exchange</div>
+            </div>
+          </div>
+          <button class="btn-full" onclick="wStep(2)">Continue — Recipient Details →</button>
+        </div>
+        <!-- Step 2 -->
+        <div class="w-panel" id="wp2">
+          <div class="w-lbl">Recipient Details</div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:9px">
+            <input class="f-input" id="r-fn" placeholder="First Name" style="margin-bottom:9px"/>
+            <input class="f-input" id="r-ln" placeholder="Last Name" style="margin-bottom:9px"/>
+          </div>
+          <input class="f-input" id="r-ph" placeholder="Phone Number" style="display:block;width:100%;margin-bottom:9px" type="tel"/>
+          <select class="f-select" id="r-co" style="display:block;width:100%;margin-bottom:9px">
+            <option value="">Country...</option>
+            <option>🇳🇬 Nigeria</option><option>🇰🇪 Kenya</option><option>🇬🇭 Ghana</option>
+            <option>🇿🇦 South Africa</option><option>🇮🇳 India</option><option>🇧🇷 Brazil</option>
+            <option>🇲🇽 Mexico</option><option>🇵🇭 Philippines</option><option>🇸🇳 Senegal</option>
+            <option>🇨🇮 Côte d'Ivoire</option><option>🇹🇿 Tanzania</option><option>🇺🇬 Uganda</option>
+          </select>
+          <input class="f-input" id="r-bk" placeholder="Bank Name" style="display:block;width:100%;margin-bottom:9px"/>
+          <input class="f-input" id="r-ac" placeholder="Account / IBAN" style="display:block;width:100%;margin-bottom:18px"/>
+          <button class="btn-full" onclick="wStep(3)">Continue — Delivery Method →</button>
+          <button class="btn-outline-full" onclick="wStep(1)">← Back</button>
+        </div>
+        <!-- Step 3 -->
+        <div class="w-panel" id="wp3">
+          <div class="w-lbl">Choose Delivery</div>
+          <div class="del-opts">
+            <div class="del-opt sel" onclick="pickDel(this)" data-m="Bank Transfer">
+              <span class="d-ico">🏦</span><div><div class="d-name">Bank Transfer</div><div class="d-time">~30 seconds · All banks</div></div><div class="d-chk">✓</div>
+            </div>
+            <div class="del-opt" onclick="pickDel(this)" data-m="Mobile Money">
+              <span class="d-ico">📱</span><div><div class="d-name">Mobile Money</div><div class="d-time">M-Pesa · MTN · Airtel · Instant</div></div><div class="d-chk"></div>
+            </div>
+            <div class="del-opt" onclick="pickDel(this)" data-m="Cash Pickup">
+              <span class="d-ico">🏪</span><div><div class="d-name">Cash Pickup</div><div class="d-time">12,000+ agent locations</div></div><div class="d-chk"></div>
+            </div>
+            <div class="del-opt" onclick="pickDel(this)" data-m="HBSend Wallet">
+              <span class="d-ico">💼</span><div><div class="d-name">HBSend Wallet</div><div class="d-time">Instant · 0% fee</div></div><div class="d-chk"></div>
+            </div>
+          </div>
+          <button class="btn-full" onclick="wStep(4)">Continue — Review Transfer →</button>
+          <button class="btn-outline-full" onclick="wStep(2)">← Back</button>
+        </div>
+        <!-- Step 4 -->
+        <div class="w-panel" id="wp4">
+          <div class="w-lbl">Review &amp; Confirm</div>
+          <div class="review-tbl">
+            <div class="rv-row"><span>You Send</span><span id="rv-send">500 USD</span></div>
+            <div class="rv-row"><span>Rate</span><span id="rv-rate">1 USD = 1,520 NGN</span></div>
+            <div class="rv-row"><span>Fee</span><span style="color:var(--green)" id="rv-fee">$2.00</span></div>
+            <div class="rv-row"><span>Method</span><span id="rv-meth">Bank Transfer</span></div>
+            <div class="rv-row"><span>Speed</span><span style="color:var(--green)">~30 seconds</span></div>
+            <div class="rv-row"><span>Recipient Gets</span><span style="color:var(--green)" id="rv-recv">757,370 NGN</span></div>
+          </div>
+          <div class="lock-bar">⏱ Rate locked for <strong style="color:var(--gold)" id="cdown">02:00</strong> — complete to confirm</div>
+          <button class="btn-full" onclick="wStep(5)">🔒 Confirm &amp; Pay →</button>
+          <button class="btn-outline-full" onclick="wStep(3)">← Back</button>
+        </div>
+        <!-- Step 5 -->
+        <div class="w-panel" id="wp5">
+          <div class="success-wrap">
+            <div class="success-ico">✅</div>
+            <h3>Transfer Initiated!</h3>
+            <p>Your transfer is in the HBS Tunnelytics pipeline. Funds arrive shortly.</p>
+            <div class="ref-code" id="ref-no">REF: HBS-2025-000000</div>
+            <div style="font-size:12px;color:var(--muted);margin-bottom:18px">🔔 SMS and email confirmation sent</div>
+            <button class="btn-full" onclick="resetW()">Send Another Transfer</button>
+            <div class="support-line">Need help? <a href="https://wa.me/254114752255" target="_blank">WhatsApp</a> or <a href="https://t.me/Girltalisha" target="_blank" style="color:#229ED9">Telegram</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- How it works -->
+  <div style="padding:0 5vw;max-width:1140px;margin:0 auto 16px">
+    <div class="sec-tag">— How It Works</div>
+    <h2 class="sec-h2">Four steps to send<br/><em>anywhere on Earth.</em></h2>
+  </div>
+  <div class="steps-row">
+    <div class="step-box"><div class="step-n">01</div><div class="step-ico">🏦</div><h3>Create Account</h3><p>Sign up free in 2 mins. Verify identity via Onfido AI — document + selfie.</p></div>
+    <div class="step-box"><div class="step-n">02</div><div class="step-ico">💳</div><h3>Add Funds</h3><p>Top up via card, bank transfer, Apple Pay or Google Pay. Instant to your wallet.</p></div>
+    <div class="step-box"><div class="step-n">03</div><div class="step-ico">🔄</div><h3>Enter Recipient</h3><p>Select country, currency, and delivery method. Lock in the live rate.</p></div>
+    <div class="step-box"><div class="step-n">04</div><div class="step-ico">⚡</div><h3>Funds Arrive</h3><p>Tunnelytics chooses the fastest rail — SWIFT, SEPA, RTP, or mobile money.</p></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: RATES
+══════════════════════════════════════════ -->
+<div class="page" id="page-rates">
+  <div class="page-hero">
+    <div class="page-eyebrow">— Live Exchange Rates</div>
+    <h1 class="page-h1">Mid-market rates.<br/><em>Always honest.</em></h1>
+    <p class="page-desc">We never inflate margins. What you see is exactly what your recipient gets. Rates sourced from Open Exchange Rates API.</p>
+  </div>
+  <div class="rates-grid">
+    <div>
+      <div class="calc-box">
+        <div class="calc-h">🔢 Currency Converter</div>
+        <div class="calc-flag-inp">
+          <span class="c-flag" id="cvf-from">🇺🇸</span>
+          <input class="c-inp" id="cv-from" type="number" value="100" oninput="doConv()"/>
+        </div>
+        <select class="f-select" id="cv-cf" onchange="doConv()" style="margin-bottom:8px">
+          <option value="USD">USD — US Dollar</option>
+          <option value="EUR">EUR — Euro</option>
+          <option value="GBP">GBP — British Pound</option>
+          <option value="CAD">CAD — Canadian Dollar</option>
+        </select>
+        <button class="swap-bar" onclick="swapConv()">⇅ Swap</button>
+        <div class="calc-flag-inp">
+          <span class="c-flag" id="cvf-to">🇳🇬</span>
+          <input class="c-inp" id="cv-to" type="text" readonly style="color:var(--green)"/>
+        </div>
+        <select class="f-select" id="cv-ct" onchange="doConv()" style="margin-top:8px">
+          <option value="NGN">NGN — Nigerian Naira</option>
+          <option value="KES">KES — Kenyan Shilling</option>
+          <option value="GHS">GHS — Ghanaian Cedi</option>
+          <option value="ZAR">ZAR — South African Rand</option>
+          <option value="INR">INR — Indian Rupee</option>
+          <option value="BRL">BRL — Brazilian Real</option>
+          <option value="XOF">XOF — West African CFA</option>
+        </select>
+        <div class="rate-info-bar">
+          <div class="rib-rate" id="conv-rate">1 USD = 1,520.34 NGN</div>
+          <div class="rib-sub">Live rate · 0.4% fee included in transfers</div>
+        </div>
+      </div>
+    </div>
+    <div>
+      <div style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;color:var(--muted2);text-transform:uppercase;margin-bottom:12px">Top Corridors · Live</div>
+      <div class="rates-list" id="rate-list-el"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: FEATURES
+══════════════════════════════════════════ -->
+<div class="page" id="page-features">
+  <div class="page-hero">
+    <div class="page-eyebrow">— Features</div>
+    <h1 class="page-h1">Built for the<br/><em>modern sender.</em></h1>
+    <p class="page-desc">Everything you need to move money confidently — whether you're sending to family, paying contractors, or running business payouts.</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-card"><span class="fc-ico">⚡</span><h3>Instant Delivery</h3><p>Tunnelytics routing selects SWIFT, SEPA, RTP, or mobile money for each corridor — guaranteeing fastest settlement possible.</p><span class="fc-tag">Tunnelytics Engine</span></div>
+    <div class="feat-card"><span class="fc-ico">💡</span><h3>Live Exchange Rates</h3><p>Mid-market rates from Open Exchange Rates API. No inflated margins. You always see exactly what the recipient receives before confirming.</p><span class="fc-tag">Open Exchange Rates</span></div>
+    <div class="feat-card"><span class="fc-ico">🌍</span><h3>80+ Countries</h3><p>Send to Nigeria, Kenya, India, Ghana, Senegal, Philippines, Brazil and 70+ more. All major money corridors fully covered.</p><span class="fc-tag">Global Coverage</span></div>
+    <div class="feat-card span2"><span class="fc-ico">💼</span><h3>Multi-Currency Wallet</h3><p>Hold USD, EUR, GBP, NGN, KES, GHS, XOF and 20+ more in a single HBSend wallet. Convert between currencies in one tap at the live mid-market rate. Powered by Stripe Treasury — fully pre-wired and awaiting your Stripe keys.</p><span class="fc-tag">Stripe Treasury</span></div>
+    <div class="feat-card"><span class="fc-ico">🔔</span><h3>Real-time Notifications</h3><p>SMS, push, and email alerts at every step. Recipients notified the moment funds land. Powered by Twilio and Firebase.</p><span class="fc-tag">Twilio + Firebase</span></div>
+    <div class="feat-card"><span class="fc-ico">🤝</span><h3>Business Batch Payouts</h3><p>Pay suppliers, contractors, or employees globally via API or CSV upload. Dedicated account managers for enterprise accounts.</p><span class="fc-tag">Business API</span></div>
+    <div class="feat-card"><span class="fc-ico">📱</span><h3>Mobile Apps</h3><p>Full-featured iOS and Android apps. Face ID, fingerprint, offline scheduling, and instant notifications built in.</p><span class="fc-tag">iOS · Android</span></div>
+    <div class="feat-card"><span class="fc-ico">📊</span><h3>Transfer Analytics</h3><p>Full dashboard with spend history, rate trends, and savings reports. Export CSV or PDF anytime via Tunnelytics data engine.</p><span class="fc-tag">Analytics Dashboard</span></div>
+    <div class="feat-card"><span class="fc-ico">🏪</span><h3>12,000+ Pickup Agents</h3><p>No bank account? Send cash for pickup at 12,000+ agent locations across Africa and Asia. Collect with just a valid ID.</p><span class="fc-tag">Cash Network</span></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: ACCOUNT
+══════════════════════════════════════════ -->
+<div class="page" id="page-account">
+  <div class="page-hero">
+    <div class="page-eyebrow">— Get Started</div>
+    <h1 class="page-h1">Create your<br/><em>free account.</em></h1>
+    <p class="page-desc">Start sending money globally in under 2 minutes. No credit card required, no monthly fees.</p>
+  </div>
+  <div class="account-wrap">
+    <div class="acc-card">
+      <div class="acc-tabs-bar">
+        <div class="acc-tab on" onclick="switchTab(this,'personal')">👤 Personal</div>
+        <div class="acc-tab" onclick="switchTab(this,'business')">🏢 Business</div>
+      </div>
+      <div class="acc-body">
+        <div class="f-row">
+          <div class="f-group"><span class="f-label">First Name</span><input class="f-input" id="a-fn" placeholder="John" type="text"/></div>
+          <div class="f-group"><span class="f-label">Last Name</span><input class="f-input" id="a-ln" placeholder="Doe" type="text"/></div>
+        </div>
+        <div class="f-group"><span class="f-label">Email Address</span><input class="f-input" id="a-em" placeholder="john@example.com" type="email"/></div>
+        <div class="f-group"><span class="f-label">Phone Number</span><input class="f-input" id="a-ph" placeholder="+254 700 000 000" type="tel"/></div>
+        <div class="f-group">
+          <span class="f-label">Country of Residence</span>
+          <select class="f-select" id="a-co">
+            <option value="">Select country...</option>
+            <option>🇺🇸 United States</option><option>🇬🇧 United Kingdom</option>
+            <option>🇫🇷 France</option><option>🇩🇪 Germany</option><option>🇨🇦 Canada</option>
+            <option>🇳🇬 Nigeria</option><option>🇬🇭 Ghana</option><option>🇰🇪 Kenya</option>
+            <option>🇿🇦 South Africa</option><option>🇮🇳 India</option><option>🇧🇷 Brazil</option>
+            <option>🇲🇽 Mexico</option><option>🇦🇺 Australia</option><option>🇸🇳 Senegal</option>
+            <option>🇨🇮 Côte d'Ivoire</option><option>🇹🇿 Tanzania</option><option>🇺🇬 Uganda</option>
+          </select>
+        </div>
+        <div class="f-group">
+          <span class="f-label">Password</span>
+          <div class="pwd-wrap">
+            <input class="f-input" id="a-pw" placeholder="Min 8 characters" type="password" oninput="evalPwd(this.value)"/>
+            <button class="pwd-eye" onclick="toggleEye()" type="button">👁</button>
+          </div>
+          <div class="str-bars"><div class="str-b" id="sb1"></div><div class="str-b" id="sb2"></div><div class="str-b" id="sb3"></div><div class="str-b" id="sb4"></div></div>
+          <div class="str-txt" id="str-txt">Enter a password</div>
+        </div>
+        <div class="f-check">
+          <input type="checkbox" id="terms"/>
+          <span>I agree to HBSend's <a href="#">Terms of Service</a>, <a href="#">Privacy Policy</a>, and <a href="#">AML/KYC Policy</a> under HBS Tunnelytics Group.</span>
+        </div>
+        <button class="btn-full" onclick="doReg()">Create Account — Free →</button>
+        <div class="f-divider">or sign up with</div>
+        <button class="soc-btn" onclick="socAuth('Google')">🔵 Continue with Google</button>
+        <button class="soc-btn" onclick="socAuth('Apple')">⬛ Continue with Apple</button>
+        <p style="text-align:center;font-size:12px;color:var(--muted2);margin-top:14px">Have an account? <button style="background:none;border:none;color:var(--green);cursor:pointer;font-size:12px" onclick="openModal('login')">Sign in →</button></p>
+      </div>
+    </div>
+    <div class="acc-perks">
+      <div class="sec-tag" style="margin-bottom:16px">— Why HBSend</div>
+      <div class="perk"><div class="perk-ico">⚡</div><div><h4>Ready in 2 minutes</h4><p>Streamlined KYC gets you verified and sending quickly — no branch visits, no paperwork.</p></div></div>
+      <div class="perk"><div class="perk-ico">🆓</div><div><h4>Zero monthly fees</h4><p>HBSend charges only 0.4% per transfer. No subscriptions, no hidden charges, no minimum balance.</p></div></div>
+      <div class="perk"><div class="perk-ico">🔐</div><div><h4>Bank-grade security</h4><p>256-bit AES encryption, biometric login, and Stripe Radar fraud detection on every transaction.</p></div></div>
+      <div class="perk"><div class="perk-ico">💬</div><div><h4>24/7 Live Support</h4><p>Real humans on WhatsApp and Telegram around the clock. <a href="https://wa.me/254114752255" style="color:var(--green);text-decoration:none">Chat now →</a></p></div></div>
+      <div class="perk"><div class="perk-ico">🌍</div><div><h4>Send to 80+ countries</h4><p>US → Nigeria, UK → Kenya, France → Senegal — all major corridors covered by HBSend.</p></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: SECURITY
+══════════════════════════════════════════ -->
+<div class="page" id="page-security">
+  <div class="page-hero">
+    <div class="page-eyebrow">— Security & Compliance</div>
+    <h1 class="page-h1">Your money is<br/><em>always protected.</em></h1>
+    <p class="page-desc">HBSend is regulated, audited, and built on security-first infrastructure by HBS Tunnelytics. Every transfer is monitored in real time.</p>
+  </div>
+  <div class="sec-grid">
+    <div class="sec-card"><div class="sc-ico">🔒</div><h3>256-bit AES Encryption</h3><p>All data in transit and at rest encrypted with military-grade AES-256. Financial information is never exposed.</p><div class="sc-badge">Active on all connections</div></div>
+    <div class="sec-card"><div class="sc-ico">🧬</div><h3>Biometric Authentication</h3><p>Face ID, fingerprint, and TOTP 2FA across web and mobile. Every login and high-value transaction re-verified.</p><div class="sc-badge">FIDO2 Compliant</div></div>
+    <div class="sec-card"><div class="sc-ico">🛡️</div><h3>Real-time Fraud Detection</h3><p>ML-powered anomaly detection via Stripe Radar flags suspicious activity immediately. Auto-freeze on breach.</p><div class="sc-badge">Stripe Radar Active</div></div>
+    <div class="sec-card"><div class="sc-ico">🪪</div><h3>KYC / AML Verification</h3><p>Compliant with global Anti-Money Laundering regulations. Identity verified via Onfido AI document scanner.</p><div class="sc-badge">Onfido Powered</div></div>
+    <div class="sec-card"><div class="sc-ico">🏛️</div><h3>Regulated & Licensed</h3><p>HBSend operates under Money Services Business licenses in all jurisdictions and is registered with FinCEN.</p><div class="sc-badge">Multi-jurisdiction</div></div>
+    <div class="sec-card"><div class="sc-ico">💾</div><h3>Data Sovereignty & GDPR</h3><p>Data stays in region. We never sell personal information. Fully compliant with GDPR, CCPA, and NDPR. Audited annually.</p><div class="sc-badge">GDPR + CCPA + NDPR</div></div>
+  </div>
+  <div class="compliance-strip">
+    <div class="comp-chip">🏦 FinCEN Registered</div>
+    <div class="comp-chip">🇪🇺 GDPR Compliant</div>
+    <div class="comp-chip">🔐 PCI DSS Level 1</div>
+    <div class="comp-chip">✅ SOC 2 Type II</div>
+    <div class="comp-chip">🛡️ ISO 27001</div>
+    <div class="comp-chip">🌍 FATF Member</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     PAGE: INTEGRATIONS
+══════════════════════════════════════════ -->
+<div class="page" id="page-integrations">
+  <div class="page-hero">
+    <div class="page-eyebrow">— API Integrations</div>
+    <h1 class="page-h1">Pre-wired &amp; ready.<br/>Waiting for <em>auth keys.</em></h1>
+    <p class="page-desc">Every integration is coded and configured. Authenticate each service below to go fully live — no extra development needed.</p>
+  </div>
+  <div class="api-grid">
+    <div class="api-card"><div class="api-logo">💳</div><h4>Stripe</h4><p>Payments, payouts, card issuance, and multi-currency wallet via Stripe Connect &amp; Treasury.</p><div class="api-tag next">⚙ Authenticate First</div></div>
+    <div class="api-card"><div class="api-logo">🔁</div><h4>Wise Platform</h4><p>FX routing and international payouts for best-rate corridors worldwide.</p><div class="api-tag pend">○ Auth Required</div></div>
+    <div class="api-card"><div class="api-logo">💰</div><h4>Open Exchange Rates</h4><p>Real-time rates for 170+ currencies. Powers all live calculator displays.</p><div class="api-tag pend">○ Auth Required</div></div>
+    <div class="api-card"><div class="api-logo">📱</div><h4>Twilio</h4><p>SMS OTP, phone verification, and real-time transfer alerts globally.</p><div class="api-tag pend">○ Auth Required</div></div>
+    <div class="api-card"><div class="api-logo">🪪</div><h4>Onfido KYC</h4><p>AI document verification and facial recognition for compliant onboarding.</p><div class="api-tag pend">○ Auth Required</div></div>
+    <div class="api-card"><div class="api-logo">🔔</div><h4>Firebase</h4><p>Auth backend, real-time database, and push notifications across web and mobile.</p><div class="api-tag pend">○ Auth Required</div></div>
+    <div class="api-card"><div class="api-logo">📧</div><h4>SendGrid</h4><p>Transactional emails — welcome, receipts, verification, and fraud alerts.</p><div class="api-tag pend">○ Auth Required</div></div>
+    <div class="api-card"><div class="api-logo">🌍</div><h4>Flutterwave</h4><p>Africa-specific rails: mobile money, USSD, local banks across 34 countries.</p><div class="api-tag pend">○ Auth Required</div></div>
+    <div class="api-card"><div class="api-logo">🏦</div><h4>Plaid</h4><p>US bank linking, balance checks, and ACH payment initiation.</p><div class="api-tag pend">○ Auth Required</div></div>
+  </div>
+  <div class="roadmap-box">
+    <div class="rm-h">🗺 Integration Roadmap</div>
+    <p class="rm-sub">Complete these steps in order. Share any key with me and I'll wire it in immediately — backend routes, webhooks, and UI binding all included.</p>
+    <div class="rm-step hi"><div class="rm-num">1</div><div><strong>Stripe</strong><span>Go to <code>dashboard.stripe.com</code> → API Keys → copy Publishable + Secret Keys. Enable Stripe Connect (multi-party payouts) and Stripe Treasury (wallets). Share both keys.</span></div></div>
+    <div class="rm-step lo"><div class="rm-num">2</div><div><strong>Firebase</strong><span>Create project at <code>console.firebase.google.com</code> → enable Authentication + Firestore + Cloud Messaging → download service account JSON.</span></div></div>
+    <div class="rm-step lo"><div class="rm-num">3</div><div><strong>Open Exchange Rates</strong><span>Sign up at <code>openexchangerates.org</code> → copy your App ID. This activates all live rate displays across the platform.</span></div></div>
+    <div class="rm-step lo"><div class="rm-num">4</div><div><strong>Twilio</strong><span>Sign up at <code>twilio.com</code> → grab Account SID + Auth Token + verified phone. Enable Verify product for OTP flows.</span></div></div>
+    <div class="rm-step lo"><div class="rm-num">5</div><div><strong>Wise Platform</strong><span>Apply at <code>wise.com/platform</code> → once approved, share API key + Business Profile ID for international corridor routing.</span></div></div>
+    <div class="rm-step lo"><div class="rm-num">6</div><div><strong>Onfido</strong><span>Apply at <code>onfido.com/platform</code> → share API token + workflow run IDs for document + selfie verification.</span></div></div>
+    <div class="rm-step lo"><div class="rm-num">7</div><div><strong>Flutterwave + Plaid + SendGrid</strong><span>Sign up at each developer portal and share API keys — all three integrated simultaneously once received.</span></div></div>
+    <p style="margin-top:18px;font-size:13px;color:var(--muted)">🚀 <strong style="color:var(--white)">Ready when you are.</strong> Share any key and the backend activates — auth, payment flows, webhooks, live rates, KYC, and notifications all wired in automatically.</p>
+  </div>
+</div>
+
+<!-- ═══ LOGIN MODAL ═══ -->
+<div class="modal-ov" id="ov-login">
+  <div class="modal">
+    <button class="m-close" onclick="closeModal('login')">✕</button>
+    <div class="m-h">Welcome back 👋</div>
+    <div class="m-sub">Sign in to your HBSend account</div>
+    <div class="f-group"><span class="f-label">Email</span><input class="f-input" placeholder="you@example.com" type="email"/></div>
+    <div class="f-group"><span class="f-label">Password</span><input class="f-input" placeholder="Your password" type="password"/></div>
+    <button class="btn-full">Sign In →</button>
+    <div class="f-divider">or</div>
+    <button class="soc-btn">🔵 Continue with Google</button>
+    <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:14px">No account? <button style="background:none;border:none;color:var(--green);cursor:pointer;font-size:12px" onclick="closeModal('login');goto('account')">Sign up free →</button></p>
+  </div>
+</div>
+
+<!-- ═══ FLOATING SUPPORT ═══ -->
+<div class="float-support">
+  <div class="fs-menu" id="fs-menu">
+    <div class="fs-lbl">Live support · Replies in &lt;2 min</div>
+    <a class="fs-btn fs-wa" href="https://wa.me/254114752255" target="_blank">💬 WhatsApp · +254 114 752 255</a>
+    <a class="fs-btn fs-tg" href="https://t.me/Girltalisha" target="_blank">✈️ Telegram · @Girltalisha</a>
+  </div>
+  <button class="fs-toggle" id="fs-btn" onclick="toggleFS()">💬</button>
+</div>
+
+<div id="toasts"></div>
+
+<!-- ═══ SHARED FOOTER (injected into pages) ═══ -->
+<template id="footer-tpl">
+<footer>
+  <div class="footer-inner">
+    <div class="fb-brand">
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+        <div style="width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--green),var(--green2));display:flex;align-items:center;justify-content:center;font-family:'Fraunces',serif;font-weight:900;font-size:15px;color:#020610">H</div>
+        <div><div style="font-family:'Fraunces',serif;font-weight:700;font-size:18px">HB<span style="color:var(--green)">Send</span></div><div style="font-size:9px;letter-spacing:.12em;color:var(--muted2);text-transform:uppercase;font-family:'JetBrains Mono',monospace">HBS Tunnelytics Group</div></div>
+      </div>
+      <p>The modern platform for international money transfers — fast, secure, and transparent. Powered by HBS Tunnelytics.</p>
+      <div class="fb-social">
+        <a class="fb-soc" href="https://wa.me/254114752255" target="_blank">💬</a>
+        <a class="fb-soc" href="https://t.me/Girltalisha" target="_blank">✈️</a>
+        <a class="fb-soc" href="#">🐦</a>
+        <a class="fb-soc" href="#">💼</a>
+      </div>
+    </div>
+    <div class="fg"><h5>Product</h5><a href="#" onclick="goto('send');return false">Send Money</a><a href="#" onclick="goto('rates');return false">Live Rates</a><a href="#" onclick="goto('features');return false">Features</a><a href="#" onclick="goto('account');return false">Get Started</a></div>
+    <div class="fg"><h5>Company</h5><a href="#">About HBSend</a><a href="#">HBS Tunnelytics</a><a href="#">Careers</a><a href="#">Blog</a></div>
+    <div class="fg"><h5>Support</h5><a href="#">Terms of Service</a><a href="#">Privacy Policy</a><a href="#">AML Policy</a><a href="https://wa.me/254114752255" target="_blank">WhatsApp Support</a><a href="https://t.me/Girltalisha" target="_blank">Telegram Support</a></div>
+  </div>
+  <div class="footer-bot">
+    <p>© 2025 HBSend · HBS Tunnelytics Group · All rights reserved · FinCEN · PCI DSS L1</p>
+    <div class="hbs-tag">Powered by <a href="#">HBS TUNNELYTICS</a></div>
+  </div>
+</footer>
+</template>
+
+<script>
+/* ═══════════════════════════════════════
+   CANVAS BACKGROUND
+═══════════════════════════════════════ */
+(function(){
+  const cv = document.getElementById('bg-canvas');
+  const cx = cv.getContext('2d');
+  let W,H,pts=[],syms=[];
+  const ICONS=['$','€','£','₦','₹','¥','💸','💳','🏦','⇄','↗'];
+  const ORB_COLORS=[{r:'0,210,122',x:.2,y:.3},{r:'59,123,255',x:.8,y:.7},{r:'255,184,0',x:.5,y:.95}];
+  let t=0;
+
+  class Pt{
+    constructor(){this.reset(true)}
+    reset(i){this.x=Math.random()*W;this.y=i?Math.random()*H:H+20;this.vx=(Math.random()-.5)*.35;this.vy=-Math.random()*.55-.1;this.r=Math.random()*1.2+.3;this.a=Math.random()*.38+.06}
+    tick(){this.x+=this.vx;this.y+=this.vy;if(this.y<-10)this.reset(false);if(this.x<0||this.x>W)this.vx*=-1}
+    draw(){cx.beginPath();cx.arc(this.x,this.y,this.r,0,6.28);cx.fillStyle=`rgba(0,210,122,${this.a})`;cx.fill()}
+  }
+  class Sym{
+    constructor(){this.reset(true)}
+    reset(i){this.ch=ICONS[Math.floor(Math.random()*ICONS.length)];this.x=Math.random()*W;this.y=i?Math.random()*H:H+60;this.vx=(Math.random()-.5)*.5;this.vy=-Math.random()*.45-.1;this.sz=Math.random()*14+9;this.a=Math.random()*.1+.025;this.rot=Math.random()*6.28;this.rv=(Math.random()-.5)*.004}
+    tick(){this.x+=this.vx;this.y+=this.vy;this.rot+=this.rv;if(this.y<-60)this.reset(false)}
+    draw(){cx.save();cx.translate(this.x,this.y);cx.rotate(this.rot);cx.font=`${this.sz}px serif`;cx.globalAlpha=this.a;cx.fillStyle='#00D27A';cx.textAlign='center';cx.textBaseline='middle';cx.fillText(this.ch,0,0);cx.restore()}
+  }
+
+  function resize(){W=cv.width=window.innerWidth;H=cv.height=window.innerHeight}
+  function init(){
+    resize();pts=[];syms=[];
+    const n=Math.floor(W*H/11000);const s=Math.floor(W*H/20000);
+    for(let i=0;i<n;i++)pts.push(new Pt());
+    for(let i=0;i<s;i++)syms.push(new Sym());
+  }
+  function loop(){
+    cx.clearRect(0,0,W,H);t++;
+    // Grid
+    cx.strokeStyle='rgba(0,210,122,0.022)';cx.lineWidth=1;
+    for(let x=0;x<W;x+=90){cx.beginPath();cx.moveTo(x,0);cx.lineTo(x,H);cx.stroke()}
+    for(let y=0;y<H;y+=90){cx.beginPath();cx.moveTo(0,y);cx.lineTo(W,y);cx.stroke()}
+    // Orbs
+    ORB_COLORS.forEach(o=>{
+      const nx=(Math.sin(t*0.00025*1000)*0.18+o.x)*W;
+      const ny=(Math.cos(t*0.0003*1000)*0.18+o.y)*H;
+      const g=cx.createRadialGradient(nx,ny,0,nx,ny,260);
+      g.addColorStop(0,`rgba(${o.r},0.07)`);g.addColorStop(1,`rgba(${o.r},0)`);
+      cx.beginPath();cx.arc(nx,ny,260,0,6.28);cx.fillStyle=g;cx.fill();
+    });
+    // Connections
+    for(let i=0;i<pts.length;i++)for(let j=i+1;j<pts.length;j++){
+      const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<90){cx.beginPath();cx.strokeStyle=`rgba(0,210,122,${.035*(1-d/90)})`;cx.lineWidth=.5;cx.moveTo(pts[i].x,pts[i].y);cx.lineTo(pts[j].x,pts[j].y);cx.stroke()}
+    }
+    pts.forEach(p=>{p.tick();p.draw()});
+    syms.forEach(s=>{s.tick();s.draw()});
+    requestAnimationFrame(loop);
+  }
+  window.addEventListener('resize',init);init();loop();
+})();
+
+/* ═══════════════════════════════════════
+   TICKER
+═══════════════════════════════════════ */
+(function(){
+  const items=[
+    {f:'🇺🇸',t:'🇳🇬',a:'$850',r:'1,292,000 NGN'},{f:'🇬🇧',t:'🇰🇪',a:'£200',r:'33,200 KES'},
+    {f:'🇫🇷',t:'🇸🇳',a:'€500',r:'327,850 XOF'},{f:'🇨🇦',t:'🇬🇭',a:'CA$1,200',r:'13,440 GHS'},
+    {f:'🇦🇺',t:'🇮🇳',a:'A$750',r:'41,250 INR'},{f:'🇺🇸',t:'🇵🇭',a:'$300',r:'16,800 PHP'},
+    {f:'🇩🇪',t:'🇿🇦',a:'€1,000',r:'20,200 ZAR'},{f:'🇺🇸',t:'🇧🇷',a:'$2,000',r:'10,600 BRL'},
+  ];
+  const el=document.getElementById('ticker-el');
+  [...items,...items].forEach(i=>{
+    const d=document.createElement('div');d.className='tick-item';
+    d.innerHTML=`${i.f} → ${i.t} <span class="tick-amount">${i.a}</span><span class="tick-sep">·</span><span class="tick-recv">${i.r}</span>`;
+    el.appendChild(d);
+  });
+})();
+
+/* ═══════════════════════════════════════
+   FX RATES
+═══════════════════════════════════════ */
+const FX={
+  USD:{NGN:1520.34,KES:129.4,GHS:14.2,ZAR:18.3,XOF:612.5,INR:83.4,BRL:5.3,MXN:17.1,PHP:56.2},
+  EUR:{NGN:1655.2,KES:141.0,GHS:15.5,ZAR:19.9,XOF:655.9,INR:90.8,BRL:5.78,MXN:18.6,PHP:61.2},
+  GBP:{NGN:1928.6,KES:164.2,GHS:18.1,ZAR:23.2,XOF:764.2,INR:105.7,BRL:6.73,MXN:21.7,PHP:71.3},
+  CAD:{NGN:1118.4,KES:95.2,GHS:10.5,ZAR:13.5,XOF:451.0,INR:61.5,BRL:3.91,MXN:12.6,PHP:41.4},
+  AUD:{NGN:987.3,KES:84.1,GHS:9.27,ZAR:11.9,XOF:398.4,INR:54.3,BRL:3.46,MXN:11.1,PHP:36.5},
+};
+const CVFLAGS={USD:'🇺🇸',EUR:'🇪🇺',GBP:'🇬🇧',CAD:'🇨🇦',AUD:'🇦🇺',NGN:'🇳🇬',KES:'🇰🇪',GHS:'🇬🇭',ZAR:'🇿🇦',INR:'🇮🇳',BRL:'🇧🇷',XOF:'🌍',MXN:'🇲🇽',PHP:'🇵🇭'};
+const CHANGES={'USD/NGN':'+0.21%','USD/KES':'-0.08%','GBP/NGN':'+0.34%','EUR/NGN':'+0.17%','GBP/KES':'+0.12%','USD/INR':'-0.05%','EUR/GHS':'+0.29%'};
+function getRate(f,t){return(FX[f]&&FX[f][t])||1}
+function fmt(n){return n.toLocaleString(undefined,{maximumFractionDigits:2})}
+
+/* ═══════════════════════════════════════
+   ROUTING
+═══════════════════════════════════════ */
+let currentPage='home';
+function goto(id){
+  if(currentPage===id)return;
+  document.getElementById('page-'+currentPage).classList.remove('active');
+  document.getElementById('page-'+id).classList.add('active');
+  currentPage=id;
+  window.scrollTo(0,0);
+  // update nav active states
+  document.querySelectorAll('[data-page]').forEach(a=>{
+    a.classList.toggle('active',a.dataset.page===id);
+  });
+  // lazy init
+  if(id==='rates')buildRateCards();
+  if(id==='send')doCalc();
+}
+
+/* ═══════════════════════════════════════
+   SEND WIDGET
+═══════════════════════════════════════ */
+let wCurrent=1,wMethod='Bank Transfer',wTimer;
+function doCalc(){
+  const f=document.getElementById('from-c').value;
+  const t=document.getElementById('to-c').value;
+  const a=parseFloat(document.getElementById('snd-amt').value)||0;
+  const rate=getRate(f,t);
+  const fee=a*.004;
+  const recv=(a-fee)*rate;
+  document.getElementById('rate-show').textContent=`1 ${f} = ${fmt(rate)} ${t}`;
+  document.getElementById('recv-amt').textContent=recv>0?fmt(recv):'—';
+}
+function wStep(n){
+  if(n===2){
+    const a=parseFloat(document.getElementById('snd-amt').value);
+    if(!a||a<=0){toast('⚠️','Enter a valid amount','o');return}
+  }
+  if(n===3){
+    if(!document.getElementById('r-fn').value||!document.getElementById('r-co').value){toast('⚠️','Fill in recipient details','o');return}
+  }
+  if(n===4){
+    const f=document.getElementById('from-c').value;
+    const t=document.getElementById('to-c').value;
+    const a=parseFloat(document.getElementById('snd-amt').value);
+    const rate=getRate(f,t);
+    const fee=a*.004;
+    const recv=(a-fee)*rate;
+    document.getElementById('rv-send').textContent=`${a.toLocaleString()} ${f}`;
+    document.getElementById('rv-rate').textContent=`1 ${f} = ${fmt(rate)} ${t}`;
+    document.getElementById('rv-fee').textContent=`$${fee.toFixed(2)}`;
+    document.getElementById('rv-meth').textContent=wMethod;
+    document.getElementById('rv-recv').textContent=`${fmt(recv)} ${t}`;
+    startCdown();
+  }
+  if(n===5){
+    clearInterval(wTimer);
+    document.getElementById('ref-no').textContent='REF: HBS-2025-'+Math.floor(100000+Math.random()*900000);
+    toast('✅','Transfer initiated successfully!','g');
+  }
+  document.getElementById('wp'+wCurrent).classList.remove('show');
+  document.getElementById('wp'+n).classList.add('show');
+  for(let i=1;i<=5;i++){
+    const s=document.getElementById('ss'+i);
+    s.className='sw-step'+(i<n?' done':i===n?' active':'');
+  }
+  wCurrent=n;
+}
+function pickDel(el){
+  document.querySelectorAll('.del-opt').forEach(d=>{d.classList.remove('sel');d.querySelector('.d-chk').textContent=''});
+  el.classList.add('sel');el.querySelector('.d-chk').textContent='✓';
+  wMethod=el.dataset.m;
+}
+function startCdown(){
+  let s=120;clearInterval(wTimer);
+  wTimer=setInterval(()=>{s--;const el=document.getElementById('cdown');if(el){const m=String(Math.floor(s/60)).padStart(2,'0');el.textContent=`${m}:${String(s%60).padStart(2,'0')}`}if(s<=0)clearInterval(wTimer)},1000);
+}
+function resetW(){wStep(1);document.getElementById('snd-amt').value=500;doCalc()}
+
+/* ═══════════════════════════════════════
+   CONVERTER
+═══════════════════════════════════════ */
+function doConv(){
+  const f=document.getElementById('cv-cf').value;
+  const t=document.getElementById('cv-ct').value;
+  const a=parseFloat(document.getElementById('cv-from').value)||0;
+  const rate=getRate(f,t);
+  document.getElementById('cv-to').value=(a*rate).toLocaleString(undefined,{maximumFractionDigits:2});
+  document.getElementById('conv-rate').textContent=`1 ${f} = ${fmt(rate)} ${t}`;
+  document.getElementById('cvf-from').textContent=CVFLAGS[f]||'🏳';
+  document.getElementById('cvf-to').textContent=CVFLAGS[t]||'🏳';
+}
+function swapConv(){toast('🔄','Currencies swapped','g');doConv()}
+function buildRateCards(){
+  const el=document.getElementById('rate-list-el');
+  if(el.children.length>0)return;
+  const pairs=[['USD','NGN','🇺🇸','🇳🇬','USD/NGN'],['USD','KES','🇺🇸','🇰🇪','USD/KES'],['GBP','NGN','🇬🇧','🇳🇬','GBP/NGN'],['EUR','NGN','🇪🇺','🇳🇬','EUR/NGN'],['GBP','KES','🇬🇧','🇰🇪','GBP/KES'],['USD','INR','🇺🇸','🇮🇳','USD/INR'],['EUR','GHS','🇪🇺','🇬🇭','EUR/GHS']];
+  pairs.forEach(([f,t,ff,tf,k])=>{
+    const rate=getRate(f,t);const chg=CHANGES[k]||'+0.10%';const up=chg.startsWith('+');
+    const d=document.createElement('div');d.className='rate-item';
+    d.innerHTML=`<div class="ri-flags"><span>${ff}</span><span>${tf}</span></div><div class="ri-info"><div class="ri-pair">${f} → ${t}</div><div class="ri-val">1 ${f} = ${fmt(rate)} ${t}</div></div><div class="ri-chg ${up?'up':'dn'}">${chg}</div>`;
+    el.appendChild(d);
+  });
+}
+
+/* ═══════════════════════════════════════
+   ACCOUNT FORM
+═══════════════════════════════════════ */
+function evalPwd(v){
+  let s=0;if(v.length>=8)s++;if(/[A-Z]/.test(v))s++;if(/[0-9]/.test(v))s++;if(/[^A-Za-z0-9]/.test(v))s++;
+  const cls=['','s1','s2','s3','s4'];
+  for(let i=1;i<=4;i++){const b=document.getElementById('sb'+i);b.className='str-b'+(i<=s?' '+cls[s]:'')}
+  document.getElementById('str-txt').textContent=v?['','Weak','Fair','Good','Strong'][s]||'Strong':'Enter a password';
+}
+function toggleEye(){const i=document.getElementById('a-pw');i.type=i.type==='password'?'text':'password'}
+function switchTab(el){document.querySelectorAll('.acc-tab').forEach(t=>t.classList.remove('on'));el.classList.add('on');toast('ℹ️',el.textContent.trim()+' selected','o')}
+function doReg(){
+  const fn=document.getElementById('a-fn'),em=document.getElementById('a-em');
+  let ok=true;
+  if(!fn.value){fn.classList.add('err');ok=false}else fn.classList.remove('err');
+  if(!em.value||!em.value.includes('@')){em.classList.add('err');ok=false}else em.classList.remove('err');
+  if(!document.getElementById('terms').checked){toast('⚠️','Please accept the Terms of Service','o');return}
+  if(!ok)return;
+  toast('✅','Account ready! Connect Firebase to activate live registration.','g');
+}
+function socAuth(p){toast('🔑',`${p} OAuth pre-wired — add Firebase Auth + ${p} provider to activate.`,'o')}
+
+/* ═══════════════════════════════════════
+   MODAL
+═══════════════════════════════════════ */
+function openModal(id){document.getElementById('ov-'+id).classList.add('open');document.body.style.overflow='hidden'}
+function closeModal(id){document.getElementById('ov-'+id).classList.remove('open');document.body.style.overflow=''}
+document.querySelectorAll('.modal-ov').forEach(el=>{el.addEventListener('click',e=>{if(e.target===el){const id=el.id.replace('ov-','');closeModal(id)}})});
+
+/* ═══════════════════════════════════════
+   HAMBURGER / DRAWER
+═══════════════════════════════════════ */
+function toggleDrawer(){
+  const d=document.getElementById('mob-drawer'),h=document.getElementById('hamburger');
+  const open=!d.classList.contains('open');
+  d.classList.toggle('open',open);h.classList.toggle('open',open);
+  document.body.style.overflow=open?'hidden':'';
+}
+function closeDrawer(){
+  document.getElementById('mob-drawer').classList.remove('open');
+  document.getElementById('hamburger').classList.remove('open');
+  document.body.style.overflow='';
+}
+
+/* ═══════════════════════════════════════
+   FLOATING SUPPORT
+═══════════════════════════════════════ */
+let fsOpen=false;
+function toggleFS(){
+  fsOpen=!fsOpen;
+  document.getElementById('fs-menu').classList.toggle('open',fsOpen);
+  document.getElementById('fs-btn').textContent=fsOpen?'✕':'💬';
+}
+
+/* ═══════════════════════════════════════
+   TOAST
+═══════════════════════════════════════ */
+function toast(icon,msg,type='g'){
+  const wrap=document.getElementById('toasts');
+  const el=document.createElement('div');
+  el.className=`toast toast-${type}`;
+  el.innerHTML=`<span style="font-size:16px;flex-shrink:0">${icon}</span><span>${msg}</span>`;
+  wrap.appendChild(el);
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>el.remove(),320)},3800);
+}
+
+/* ═══════════════════════════════════════
+   INJECT FOOTERS INTO PAGES
+═══════════════════════════════════════ */
+(function(){
+  const tpl=document.getElementById('footer-tpl');
+  const pages=['home','send','rates','features','account','security','integrations'];
+  pages.forEach(id=>{
+    const pg=document.getElementById('page-'+id);
+    if(pg){const ft=tpl.content.cloneNode(true);pg.appendChild(ft)}
+  });
+})();
+
+/* ═══════════════════════════════════════
+   INIT
+═══════════════════════════════════════ */
+doCalc();
+doConv();
+
+// Simulate live activity toasts
+const acts=['✅ Omar K. sent €850 to Nigeria · delivered','💸 Amara D. received 1,292,000 NGN','🔒 New account verified in Kenya','⚡ Transfer US→India completed in 48s','💳 Maria P. sent $1,200 to Ghana'];
+let actI=0;
+setTimeout(()=>{setInterval(()=>{toast('🌍',acts[actI++%acts.length],'g')},14000)},5000);
+</script>
+</body>
+</html>
